@@ -28,8 +28,8 @@ from bpy.props import (IntProperty,
                        BoolProperty
                        )
 
-from add_mesh_BoltFactory.createMesh import *
-from add_mesh_BoltFactory.preset_utils import *
+from add_mesh_fastener.createMesh import *
+from add_mesh_fastener.preset_utils import *
 
 
 

@@ -17,23 +17,22 @@
 # ##### END GPL LICENSE BLOCK #####
 
 bl_info = {
-    "name": "BoltFactory",
+    "name": "Fastener Factory",
     "author": "Aaron Keith, worlddevelopment",
     "version": (3, 9),
     "blender": (2, 6, 3),
     "location": "View3D > Add > Mesh",
-    "description": "Add a bolt or nut",
+    "description": "Add a fastener",
     "wiki_url": "http://wiki.blender.org/index.php/Extensions:2.6/Py/"\
         "Scripts/Add_Mesh/BoltFactory",
-    "tracker_url": "https://projects.blender.org/tracker/index.php?"\
-        "func=detail&aid=22842",
+    "tracker_url": "http://github.com/faerietree/add_mesh_fastener",
     "category": "Add Mesh"}
 
 if "bpy" in locals():
     import imp
     imp.reload(Boltfactory)
 else:
-    from add_mesh_BoltFactory import Boltfactory
+    from add_mesh_fastener import Boltfactory
 
 import bpy
 from bpy.props import (
