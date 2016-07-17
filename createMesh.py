@@ -23,7 +23,6 @@ from math import *
 from itertools import *
 
 NARROW_UI = 180
-MAX_INPUT_NUMBER = 500
 
 #GLOBAL_SCALE = 0.001    # 1 blender unit = X mm
 #GLOBAL_SCALE = 0.01    # 1 blender unit = X mm
