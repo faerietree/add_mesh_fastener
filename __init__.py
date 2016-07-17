@@ -20,7 +20,7 @@ bl_info = {
     "name": "BoltFactory",
     "author": "Aaron Keith",
     "version": (3, 9),
-    "blender": (2, 63, 0),
+    "blender": (2, 6, 3),
     "location": "View3D > Add > Mesh",
     "description": "Add a bolt or nut",
     "wiki_url": "http://wiki.blender.org/index.php/Extensions:2.6/Py/"\
@@ -55,6 +55,6 @@ def unregister():
 
     bpy.types.INFO_MT_mesh_add.remove(add_mesh_bolt_button)
     #bpy.types.VIEW3D_PT_tools_objectmode.remove(add_mesh_bolt_button) #just for testing
-    
+
 if __name__ == "__main__":
     register()
