@@ -54,12 +54,12 @@ def update_settings_cb(self, context):
         update_settings_cb.level = True
         settings = self
 
-        if not settings.last_preset or settings.bf_presets != settings.last_preset:
-            #print("setting preset: ", settings.bf_presets)
-            setProps(settings, settings.bf_presets, settings.presetsPath)
+        if not settings.last_preset or settings.bf_preset != settings.last_preset:
+            #print("setting preset: ", settings.bf_preset)
+            setProps(settings, settings.bf_preset, settings.presetsPath)
             settings.bf_Phillips_Bit_Depth = float(Get_Phillips_Bit_Height(settings.bf_Philips_Bit_Dia))
 
-            settings.last_preset = settings.bf_presets
+            settings.last_preset = settings.bf_preset
 
         #settings.bf_Phillips_Bit_Depth = float(Get_Phillips_Bit_Height(settings.bf_Philips_Bit_Dia))
         #settings.bf_Philips_Bit_Dia = settings.bf_Pan_Head_Dia*(1.82/5.6)
@@ -280,7 +280,7 @@ class FastenerSettings(PropertyGroup):
 
     presets, presetsPath = getPresets()
 
-    bf_presets = EnumProperty(attr='bf_presets',
+    bf_preset = EnumProperty(attr='bf_preset',
             name='Preset',
             description="Use Preset from File",
             default='M3.py',
@@ -308,7 +308,7 @@ class OBJECT_PT_Fastener(Panel):
 
         #ENUMS
         col.prop(settings, 'bf_Model_Type')
-        col.prop(settings, 'bf_presets')
+        col.prop(settings, 'bf_preset')
         col.separator()
 
         #Bit
