@@ -46,7 +46,7 @@ class add_mesh_bolt(bpy.types.Operator):
     bl_idname = "mesh.bolt_add"
     bl_label = "Add Bolt"
     bl_options = {'REGISTER', 'UNDO', 'PRESET'}
-    bl_description = "adds many types of Bolts"
+    bl_description = "Generate screws, nuts."
 
     align_matrix = mathutils.Matrix()
     MAX_INPUT_NUMBER = 500
@@ -63,7 +63,7 @@ class add_mesh_bolt(bpy.types.Operator):
                         ('bf_Model_Nut','NUT','Nut Model')]
     bf_Model_Type = EnumProperty( attr='bf_Model_Type',
             name='Model',
-            description='Choose the type off model you would like',
+            description='Choose a type of model',
             items = Model_Type_List, default = 'bf_Model_Bolt')
 
     #Head Types
@@ -73,8 +73,8 @@ class add_mesh_bolt(bpy.types.Operator):
                         ('bf_Head_Pan','PAN','Pan Head'),
                         ('bf_Head_CounterSink','COUNTER SINK','Counter Sink Head')]
     bf_Head_Type = EnumProperty( attr='bf_Head_Type',
-            name='Head',
-            description='Choose the type off Head you would like',
+            name='Head Type',
+            description='Type of Head',
             items = Model_Type_List, default = 'bf_Head_Hex')
 
     #Bit Types
@@ -83,7 +83,7 @@ class add_mesh_bolt(bpy.types.Operator):
                     ('bf_Bit_Philips','PHILLIPS','Phillips Bit Type')]
     bf_Bit_Type = EnumProperty( attr='bf_Bit_Type',
             name='Bit Type',
-            description='Choose the type of bit to you would like',
+            description='Type of bit',
             items = Bit_Type_List, default = 'bf_Bit_None')
 
     #Nut Types
@@ -91,7 +91,7 @@ class add_mesh_bolt(bpy.types.Operator):
                     ('bf_Nut_Lock','LOCK','Lock Nut')]
     bf_Nut_Type = EnumProperty( attr='bf_Nut_Type',
             name='Nut Type',
-            description='Choose the type of nut you would like',
+            description='Type of nut',
             items = Nut_Type_List, default = 'bf_Nut_Hex')
 
     #Shank Types
@@ -175,7 +175,7 @@ class add_mesh_bolt(bpy.types.Operator):
     bf_Pitch = FloatProperty( attr='bf_Pitch',
             name='Pitch', default = 0.35,
             min = 0.1, soft_min = 0.1, max = 7.0,
-            description='Pitch if the thread')
+            description='Pitch of the thread')
 
     bf_Minor_Dia = FloatProperty( attr='bf_Minor_Dia',
             name='Minor Dia', default = 0, #set in execute
