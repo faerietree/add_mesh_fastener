@@ -100,14 +100,14 @@ def RemoveDoubles(verts,faces,Decimal_Places = 4):
 
 
 def Scale_Mesh_Verts(verts, scale_factor):
-    # Scale according to scene unit settings. Otherwise it's
-    # too small or too big.
+    # Scale according to scene unit settings (metric, imperial,
+    # scale factor). Otherwise the mesh will is too small / big.
     # TODO Use scale_length alone and remove scale_factor?
     scale_factor = bpy.context.scene.unit_settings.scale_length / scale_factor
-    Ret_verts = []
+    verts_scaled = []
     for v in verts:
-        Ret_verts.append([v[0]*scale_factor,v[1]*scale_factor,v[2]*scale_factor])
-    return Ret_verts
+        verts_scaled.append([v[0]*scale_factor,v[1]*scale_factor,v[2]*scale_factor])
+    return verts_scaled
 
 
 
