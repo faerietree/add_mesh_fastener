@@ -19,7 +19,15 @@
 
 import bpy
 import mathutils
-from bpy.props import *
+from bpy.types import Panel, Operator, Scene, PropertyGroup
+from bpy.props import (IntProperty,
+                       FloatProperty,
+                       StringProperty,
+                       EnumProperty,
+                       PointerProperty,
+                       BoolProperty
+                       )
+
 from add_mesh_BoltFactory.createMesh import *
 from add_mesh_BoltFactory.preset_utils import *
 
@@ -40,34 +48,55 @@ def align_matrix(context):
     return align_matrix
 
 
+def update_settings_cb(self, context):
+    # annoying workaround for recursive call
+    if update_settings_cb.level == False:
+        update_settings_cb.level = True
+        settings = self
 
-class add_mesh_bolt(bpy.types.Operator):
-    """"""
-    bl_idname = "mesh.bolt_add"
-    bl_label = "Add Bolt"
-    bl_options = {'REGISTER', 'UNDO', 'PRESET'}
-    bl_description = "Generate screws, nuts."
+        if not settings.last_preset or settings.bf_presets != settings.last_preset:
+            #print("setting preset: ", settings.bf_presets)
+            setProps(settings, settings.bf_presets, settings.presetsPath)
+            settings.bf_Phillips_Bit_Depth = float(Get_Phillips_Bit_Height(settings.bf_Philips_Bit_Dia))
 
-    align_matrix = mathutils.Matrix()
-    MAX_INPUT_NUMBER = 500
+            settings.last_preset = settings.bf_presets
 
-  # edit - Whether to add or update.
-    edit = BoolProperty(name="",
-        description="",
-        default=False,
-        options={'HIDDEN'})
+        #settings.bf_Phillips_Bit_Depth = float(Get_Phillips_Bit_Height(settings.bf_Philips_Bit_Dia))
+        #settings.bf_Philips_Bit_Dia = settings.bf_Pan_Head_Dia*(1.82/5.6)
+        #settings.bf_Minor_Dia = settings.bf_Major_Dia - (1.082532 * settings.bf_Pitch)
 
 
-    #Model Types
-    Model_Type_List = [('bf_Model_Bolt','BOLT','Bolt Model'),
-                        ('bf_Model_Nut','NUT','Nut Model')]
+        if not settings.update_manually:
+            bpy.ops.mesh.fastener_update()
+
+        update_settings_cb.level = False
+
+update_settings_cb.level = False
+
+
+
+MAX_INPUT_NUMBER = 500
+class FastenerSettings(PropertyGroup):
+    """Parameters of the fastener"""  # Tooltip
+
+    update_manually = BoolProperty(
+            name="Update manually"
+            ,description="If enabled apply settings manually instead of realtime update."
+            ,default=False
+            ,update=update_settings_cb
+    )
+
+    # Model Types
+    bf_Model_Type_List = [('bf_Model_Bolt','BOLT',"Bolt Model"),
+                        ('bf_Model_Nut','NUT',"Nut Model")]
     bf_Model_Type = EnumProperty( attr='bf_Model_Type',
-            name='Model',
-            description='Choose a type of model',
-            items = Model_Type_List, default = 'bf_Model_Bolt')
-
-    #Head Types
-    Model_Type_List = [('bf_Head_Hex','HEX','Hex Head'),
+            name="Model",
+            description="Choose a type of model",
+            items = bf_Model_Type_List, default = 'bf_Model_Bolt'
+            ,update=update_settings_cb
+            )
+    # Head Types
+    bf_Head_Type_List = [('bf_Head_Hex','HEX','Hex Head'),
                         ('bf_Head_Cap','CAP','Cap Head'),
                         ('bf_Head_Dome','DOME','Dome Head'),
                         ('bf_Head_Pan','PAN','Pan Head'),
@@ -75,123 +104,167 @@ class add_mesh_bolt(bpy.types.Operator):
     bf_Head_Type = EnumProperty( attr='bf_Head_Type',
             name='Head Type',
             description='Type of Head',
-            items = Model_Type_List, default = 'bf_Head_Hex')
+            items = bf_Head_Type_List, default = 'bf_Head_Hex'
+            ,update=update_settings_cb
+            )
 
-    #Bit Types
+    # Bit Types
     Bit_Type_List = [('bf_Bit_None','NONE','No Bit Type'),
                     ('bf_Bit_Allen','ALLEN','Allen Bit Type'),
                     ('bf_Bit_Philips','PHILLIPS','Phillips Bit Type')]
     bf_Bit_Type = EnumProperty( attr='bf_Bit_Type',
             name='Bit Type',
             description='Type of bit',
-            items = Bit_Type_List, default = 'bf_Bit_None')
+            items = Bit_Type_List, default = 'bf_Bit_None'
+            ,update=update_settings_cb
+            )
 
-    #Nut Types
+    # Nut Types
     Nut_Type_List = [('bf_Nut_Hex','HEX','Hex Nut'),
                     ('bf_Nut_Lock','LOCK','Lock Nut')]
     bf_Nut_Type = EnumProperty( attr='bf_Nut_Type',
             name='Nut Type',
             description='Type of nut',
-            items = Nut_Type_List, default = 'bf_Nut_Hex')
+            items = Nut_Type_List, default = 'bf_Nut_Hex'
+            ,update=update_settings_cb
+            )
 
-    #Shank Types
+    # Shank Types
     bf_Shank_Length = FloatProperty(attr='bf_Shank_Length',
             name='Shank Length', default = 0,
             min = 0, soft_min = 0, max = MAX_INPUT_NUMBER,
-            description='Length of the unthreaded shank')
+            description='Length of the unthreaded shank'
+            ,update=update_settings_cb
+            )
 
     bf_Shank_Dia = FloatProperty(attr='bf_Shank_Dia',
             name='Shank Dia', default = 3,
             min = 0, soft_min = 0,max = MAX_INPUT_NUMBER,
-            description='Diameter of the shank')
+            description='Diameter of the shank'
+            ,update=update_settings_cb
+            )
 
     bf_Phillips_Bit_Depth = FloatProperty(attr='bf_Phillips_Bit_Depth',
             name='Bit Depth', default = 0, #set in execute
             options = {'HIDDEN'}, #gets calculated in execute
             min = 0, soft_min = 0,max = MAX_INPUT_NUMBER,
-            description='Depth of the Phillips Bit')
+            description='Depth of the Phillips Bit'
+            ,update=update_settings_cb
+            )
 
     bf_Allen_Bit_Depth = FloatProperty(attr='bf_Allen_Bit_Depth',
             name='Bit Depth', default = 1.5,
             min = 0, soft_min = 0,max = MAX_INPUT_NUMBER,
-            description='Depth of the Allen Bit')
+            description='Depth of the Allen Bit'
+            ,update=update_settings_cb
+            )
 
     bf_Allen_Bit_Flat_Distance = FloatProperty( attr='bf_Allen_Bit_Flat_Distance',
             name='Flat Dist', default = 2.5,
             min = 0, soft_min = 0, max = MAX_INPUT_NUMBER,
-            description='Flat Distance of the Allen Bit')
+            description='Flat Distance of the Allen Bit'
+            ,update=update_settings_cb
+            )
 
     bf_Hex_Head_Height = FloatProperty( attr='bf_Hex_Head_Height',
             name='Head Height', default = 2,
             min = 0, soft_min = 0, max = MAX_INPUT_NUMBER,
-            description='Height of the Hex Head')
+            description='Height of the Hex Head'
+            ,update=update_settings_cb
+            )
 
     bf_Hex_Head_Flat_Distance = FloatProperty( attr='bf_Hex_Head_Flat_Distance',
             name='Flat Dist', default = 5.5,
             min = 0, soft_min = 0, max = MAX_INPUT_NUMBER,
-            description='Flat Distance of the Hex Head')
+            description='Flat Distance of the Hex Head'
+            ,update=update_settings_cb
+            )
 
     bf_CounterSink_Head_Dia = FloatProperty( attr='bf_CounterSink_Head_Dia',
             name='Head Dia', default = 5.5,
             min = 0, soft_min = 0, max = MAX_INPUT_NUMBER,
-            description='Diameter of the Counter Sink Head')
+            description='Diameter of the Counter Sink Head'
+            ,update=update_settings_cb
+            )
 
     bf_Cap_Head_Height = FloatProperty( attr='bf_Cap_Head_Height',
             name='Head Height', default = 5.5,
             min = 0, soft_min = 0, max = MAX_INPUT_NUMBER,
-            description='Height of the Cap Head')
+            description='Height of the Cap Head'
+            ,update=update_settings_cb
+            )
 
     bf_Cap_Head_Dia = FloatProperty( attr='bf_Cap_Head_Dia',
             name='Head Dia', default = 3,
             min = 0, soft_min = 0, max = MAX_INPUT_NUMBER,
-            description='Diameter of the Cap Head')
+            description='Diameter of the Cap Head'
+            ,update=update_settings_cb
+            )
 
     bf_Dome_Head_Dia = FloatProperty( attr='bf_Dome_Head_Dia',
             name='Dome Head Dia', default = 5.6,
             min = 0, soft_min = 0, max = MAX_INPUT_NUMBER,
-            description='Length of the unthreaded shank')
+            description='Length of the unthreaded shank'
+            ,update=update_settings_cb
+            )
 
     bf_Pan_Head_Dia = FloatProperty( attr='bf_Pan_Head_Dia',
             name='Pan Head Dia', default = 5.6,
             min = 0, soft_min = 0, max = MAX_INPUT_NUMBER,
-            description='Diameter of the Pan Head')
+            description='Diameter of the Pan Head'
+            ,update=update_settings_cb
+            )
 
     bf_Philips_Bit_Dia = FloatProperty(attr='bf_Philips_Bit_Dia',
             name='Bit Dia', default = 0, #set in execute
             options = {'HIDDEN'}, #gets calculated in execute
             min = 0, soft_min = 0,max = MAX_INPUT_NUMBER,
-            description='Diameter of the Philips Bit')
+            description='Diameter of the Philips Bit'
+            ,update=update_settings_cb
+            )
 
     bf_Thread_Length = FloatProperty( attr='bf_Thread_Length',
             name='Thread Length', default = 6,
             min = 0, soft_min = 0, max = MAX_INPUT_NUMBER,
-            description='Length of the Thread')
+            description='Length of the Thread'
+            ,update=update_settings_cb
+            )
 
     bf_Major_Dia = FloatProperty( attr='bf_Major_Dia',
             name='Major Dia', default = 3,
             min = 0, soft_min = 0, max = MAX_INPUT_NUMBER,
-            description='Outside diameter of the Thread')
+            description='Outside diameter of the Thread'
+            ,update=update_settings_cb
+            )
 
     bf_Pitch = FloatProperty( attr='bf_Pitch',
             name='Pitch', default = 0.35,
             min = 0.1, soft_min = 0.1, max = 7.0,
-            description='Pitch of the thread')
+            description='Pitch of the thread'
+            ,update=update_settings_cb
+            )
 
     bf_Minor_Dia = FloatProperty( attr='bf_Minor_Dia',
             name='Minor Dia', default = 0, #set in execute
             options = {'HIDDEN'}, #gets calculated in execute
             min = 0, soft_min = 0, max = MAX_INPUT_NUMBER,
-            description='Inside diameter of the Thread')
+            description='Inside diameter of the Thread'
+            ,update=update_settings_cb
+            )
 
     bf_Crest_Percent = IntProperty( attr='bf_Crest_Percent',
             name='Crest Percent', default = 10,
             min = 1, soft_min = 1, max = 90,
-            description='Percent of the pitch that makes up the Crest')
+            description='Percent of the pitch that makes up the Crest'
+            ,update=update_settings_cb
+            )
 
     bf_Root_Percent = IntProperty( attr='bf_Root_Percent',
             name='Root Percent', default = 10,
             min = 1, soft_min = 1, max = 90,
-            description='Percent of the pitch that makes up the Root')
+            description='Percent of the pitch that makes up the Root'
+            ,update=update_settings_cb
+            )
 
     bf_Hex_Nut_Height = FloatProperty( attr='bf_Hex_Nut_Height',
             name='Hex Nut Height', default = 2.4,
@@ -201,7 +274,9 @@ class add_mesh_bolt(bpy.types.Operator):
     bf_Hex_Nut_Flat_Distance = FloatProperty( attr='bf_Hex_Nut_Flat_Distance',
             name='Hex Nut Flat Dist', default = 5.5,
             min = 0, soft_min = 0, max = MAX_INPUT_NUMBER,
-            description='Flat distance of the Hex Nut')
+            description='Flat distance of the Hex Nut'
+            ,update=update_settings_cb
+            )
 
     presets, presetsPath = getPresets()
 
@@ -209,103 +284,163 @@ class add_mesh_bolt(bpy.types.Operator):
             name='Preset',
             description="Use Preset from File",
             default='M3.py',
-            items=presets)
+            items=presets
+            ,update=update_settings_cb
+            )
 
     last_preset = None
 
 
+
+class OBJECT_PT_Fastener(Panel):
+    bl_label = "Fastener settings"
+    bl_space_type = 'PROPERTIES'
+    bl_region_type = 'WINDOW'
+    bl_context = 'object'
+
     def draw(self, context):
         layout = self.layout
         col = layout.column()
+        scene = context.scene
+        obj = context.active_object
+        settings = obj.fastener_settings
+
 
         #ENUMS
-        col.prop(self, 'bf_Model_Type')
-        col.prop(self, 'bf_presets')
+        col.prop(settings, 'bf_Model_Type')
+        col.prop(settings, 'bf_presets')
         col.separator()
 
         #Bit
-        if self.bf_Model_Type == 'bf_Model_Bolt':
-            col.prop(self, 'bf_Bit_Type')
-            if self.bf_Bit_Type == 'bf_Bit_None':
+        if settings.bf_Model_Type == 'bf_Model_Bolt':
+            col.prop(settings, 'bf_Bit_Type')
+            if settings.bf_Bit_Type == 'bf_Bit_None':
                 pass
-            elif self.bf_Bit_Type == 'bf_Bit_Allen':
-                col.prop(self, 'bf_Allen_Bit_Depth')
-                col.prop(self, 'bf_Allen_Bit_Flat_Distance')
-            elif self.bf_Bit_Type == 'bf_Bit_Philips':
-                col.prop(self, 'bf_Phillips_Bit_Depth')
-                col.prop(self, 'bf_Philips_Bit_Dia')
+            elif settings.bf_Bit_Type == 'bf_Bit_Allen':
+                col.prop(settings, 'bf_Allen_Bit_Depth')
+                col.prop(settings, 'bf_Allen_Bit_Flat_Distance')
+            elif settings.bf_Bit_Type == 'bf_Bit_Philips':
+                col.prop(settings, 'bf_Phillips_Bit_Depth')
+                col.prop(settings, 'bf_Philips_Bit_Dia')
             col.separator()
 
         #Head
-        if self.bf_Model_Type == 'bf_Model_Bolt':
-            col.prop(self, 'bf_Head_Type')
-            if self.bf_Head_Type == 'bf_Head_Hex':
-                col.prop(self, 'bf_Hex_Head_Height')
-                col.prop(self, 'bf_Hex_Head_Flat_Distance')
-            elif self.bf_Head_Type == 'bf_Head_Cap':
-                col.prop(self, 'bf_Cap_Head_Height')
-                col.prop(self, 'bf_Cap_Head_Dia')
-            elif self.bf_Head_Type == 'bf_Head_Dome':
-                col.prop(self, 'bf_Dome_Head_Dia')
-            elif self.bf_Head_Type == 'bf_Head_Pan':
-                col.prop(self, 'bf_Pan_Head_Dia')
-            elif self.bf_Head_Type == 'bf_Head_CounterSink':
-                col.prop(self, 'bf_CounterSink_Head_Dia')
+        if settings.bf_Model_Type == 'bf_Model_Bolt':
+            col.prop(settings, 'bf_Head_Type')
+            if settings.bf_Head_Type == 'bf_Head_Hex':
+                col.prop(settings, 'bf_Hex_Head_Height')
+                col.prop(settings, 'bf_Hex_Head_Flat_Distance')
+            elif settings.bf_Head_Type == 'bf_Head_Cap':
+                col.prop(settings, 'bf_Cap_Head_Height')
+                col.prop(settings, 'bf_Cap_Head_Dia')
+            elif settings.bf_Head_Type == 'bf_Head_Dome':
+                col.prop(settings, 'bf_Dome_Head_Dia')
+            elif settings.bf_Head_Type == 'bf_Head_Pan':
+                col.prop(settings, 'bf_Pan_Head_Dia')
+            elif settings.bf_Head_Type == 'bf_Head_CounterSink':
+                col.prop(settings, 'bf_CounterSink_Head_Dia')
             col.separator()
         #Shank
-        if self.bf_Model_Type == 'bf_Model_Bolt':
+        if settings.bf_Model_Type == 'bf_Model_Bolt':
             col.label(text='Shank')
-            col.prop(self, 'bf_Shank_Length')
-            col.prop(self, 'bf_Shank_Dia')
+            col.prop(settings, 'bf_Shank_Length')
+            col.prop(settings, 'bf_Shank_Dia')
             col.separator()
         #Nut
-        if self.bf_Model_Type == 'bf_Model_Nut':
-            col.prop(self, 'bf_Nut_Type')
-            col.prop(self, 'bf_Hex_Nut_Height')
-            col.prop(self, 'bf_Hex_Nut_Flat_Distance')
+        if settings.bf_Model_Type == 'bf_Model_Nut':
+            col.prop(settings, 'bf_Nut_Type')
+            col.prop(settings, 'bf_Hex_Nut_Height')
+            col.prop(settings, 'bf_Hex_Nut_Flat_Distance')
         #Thread
         col.label(text='Thread')
-        if self.bf_Model_Type == 'bf_Model_Bolt':
-            col.prop(self, 'bf_Thread_Length')
-        col.prop(self, 'bf_Major_Dia')
-        col.prop(self, 'bf_Minor_Dia')
-        col.prop(self, 'bf_Pitch')
-        col.prop(self, 'bf_Crest_Percent')
-        col.prop(self, 'bf_Root_Percent')
+        if settings.bf_Model_Type == 'bf_Model_Bolt':
+            col.prop(settings, 'bf_Thread_Length')
+        col.prop(settings, 'bf_Major_Dia')
+        col.prop(settings, 'bf_Minor_Dia')
+        col.prop(settings, 'bf_Pitch')
+        col.prop(settings, 'bf_Crest_Percent')
+        col.prop(settings, 'bf_Root_Percent')
 
+        col.separator()
+        col.prop(settings, "update_manually")
+        if settings.update_manually:
+            col.operator("mesh.fastener_update", icon='FILE_TICK', text="Update fastener")
+
+
+
+class MESH_OT_add_fastener(bpy.types.Operator):
+    """"""
+    bl_idname = "mesh.fastener_add"
+    bl_label = "Add fastener"
+    bl_options = {'REGISTER', 'UNDO', 'PRESET'}
+    bl_description = "Generate fasteners like bolts, screws, nuts."
 
 
     ##### POLL #####
     @classmethod
     def poll(cls, context):
-        return context.scene != None
+        scene = context.scene
+        return scene != None
+
 
     ##### EXECUTE #####
     def execute(self, context):
-
         #print('EXECUTING...')
+        scene = context.scene
 
-        if not self.last_preset or self.bf_presets != self.last_preset:
-            #print('setting Preset', self.bf_presets)
-            setProps(self, self.bf_presets, self.presetsPath)
-            self.bf_Phillips_Bit_Depth = float(Get_Phillips_Bit_Height(self.bf_Philips_Bit_Dia))
+        # Create new object
+        name = "Fastener"
+        mesh = bpy.data.meshes.new(name)
+        obj = bpy.data.objects.new(name, mesh)
 
-            self.last_preset = self.bf_presets
+        # Link new object to the given scene.
+        scene.objects.link(obj)
+        scene.objects.active = obj
+        scene.objects.active.select
+
+        return bpy.ops.mesh.fastener_update()
 
 
-        #self.bf_Phillips_Bit_Depth = float(Get_Phillips_Bit_Height(self.bf_Philips_Bit_Dia))
-        #self.bf_Philips_Bit_Dia = self.bf_Pan_Head_Dia*(1.82/5.6)
-        #self.bf_Minor_Dia = self.bf_Major_Dia - (1.082532 * self.bf_Pitch)
 
-        Create_New_Mesh(self, context, self.align_matrix)
+class MESH_OT_update_fastener(bpy.types.Operator):
+    """"""
+    bl_idname = "mesh.fastener_update"
+    bl_label = "Update fastener"
+    bl_options = {'REGISTER', 'UNDO', 'PRESET'}
+    bl_description = "Update fasteners like bolts, screws, nuts."
+
+
+    ##### PROPERTIES
+    align_matrix = mathutils.Matrix()
+
+
+    ##### METHODS
+    @classmethod
+    def poll(cls, context):
+        scene = context.scene
+        obj_active = scene.objects.active
+        return scene != None and obj_active != None
+
+
+    def execute(self, context):
+        #print('EXECUTING...')
+        obj = context.scene.objects.active
+        settings = obj.fastener_settings
+
+        # Place the object at the 3D cursor location.
+        # apply viewRotaion
+        obj.matrix_world = self.align_matrix
+
+        Create_New_Mesh(settings, context, self.align_matrix)
 
         return {'FINISHED'}
 
-    ##### INVOKE #####
+
     def invoke(self, context, event):
-        #print('\n___________START_____________')
+        #print("\n___________START_____________")
         # store creation_matrix
         self.align_matrix = align_matrix(context)
         self.execute(context)
 
         return {'FINISHED'}
+

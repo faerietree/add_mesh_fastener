@@ -18,7 +18,7 @@
 
 bl_info = {
     "name": "BoltFactory",
-    "author": "Aaron Keith",
+    "author": "Aaron Keith, worlddevelopment",
     "version": (3, 9),
     "blender": (2, 6, 3),
     "location": "View3D > Add > Mesh",
@@ -36,12 +36,16 @@ else:
     from add_mesh_BoltFactory import Boltfactory
 
 import bpy
+from bpy.props import (
+                       PointerProperty,
+                       )
+
 
 ################################################################################
 ##### REGISTER #####
 
 def add_mesh_bolt_button(self, context):
-    self.layout.operator(Boltfactory.add_mesh_bolt.bl_idname, text="Bolt", icon="PLUGIN")
+    self.layout.operator(Boltfactory.MESH_OT_add_fastener.bl_idname, text="Bolt", icon="PLUGIN")
 
 
 def register():
@@ -49,12 +53,17 @@ def register():
 
     bpy.types.INFO_MT_mesh_add.append(add_mesh_bolt_button)
     #bpy.types.VIEW3D_PT_tools_objectmode.prepend(add_mesh_bolt_button) #just for testing
+    bpy.types.Object.fastener_settings = PointerProperty(type=Boltfactory.FastenerSettings)
+
 
 def unregister():
     bpy.utils.unregister_module(__name__)
 
     bpy.types.INFO_MT_mesh_add.remove(add_mesh_bolt_button)
     #bpy.types.VIEW3D_PT_tools_objectmode.remove(add_mesh_bolt_button) #just for testing
+
+    del bpy.types.Object.fastener_settings
+
 
 if __name__ == "__main__":
     register()
