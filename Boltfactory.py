@@ -239,7 +239,7 @@ class FastenerSettings(PropertyGroup):
 
     bf_Pitch = FloatProperty( attr='bf_Pitch',
             name='Pitch', default = 0.35,
-            min = 0.1, soft_min = 0.1, max = 7.0,
+            min = 0.1, soft_min = 0.1, max = 30.0,
             description='Pitch of the thread'
             ,update=update_settings_cb
             )
