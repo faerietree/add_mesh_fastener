@@ -47,17 +47,17 @@ class add_mesh_bolt(bpy.types.Operator):
     bl_label = "Add Bolt"
     bl_options = {'REGISTER', 'UNDO', 'PRESET'}
     bl_description = "adds many types of Bolts"
-    
+
     align_matrix = mathutils.Matrix()
     MAX_INPUT_NUMBER = 500
-  
+
   # edit - Whether to add or update.
     edit = BoolProperty(name="",
         description="",
         default=False,
         options={'HIDDEN'})
 
-    
+
     #Model Types
     Model_Type_List = [('bf_Model_Bolt','BOLT','Bolt Model'),
                         ('bf_Model_Nut','NUT','Nut Model')]
@@ -66,7 +66,7 @@ class add_mesh_bolt(bpy.types.Operator):
             description='Choose the type off model you would like',
             items = Model_Type_List, default = 'bf_Model_Bolt')
 
-    #Head Types 
+    #Head Types
     Model_Type_List = [('bf_Head_Hex','HEX','Hex Head'),
                         ('bf_Head_Cap','CAP','Cap Head'),
                         ('bf_Head_Dome','DOME','Dome Head'),
@@ -76,7 +76,7 @@ class add_mesh_bolt(bpy.types.Operator):
             name='Head',
             description='Choose the type off Head you would like',
             items = Model_Type_List, default = 'bf_Head_Hex')
-    
+
     #Bit Types
     Bit_Type_List = [('bf_Bit_None','NONE','No Bit Type'),
                     ('bf_Bit_Allen','ALLEN','Allen Bit Type'),
@@ -85,7 +85,7 @@ class add_mesh_bolt(bpy.types.Operator):
             name='Bit Type',
             description='Choose the type of bit to you would like',
             items = Bit_Type_List, default = 'bf_Bit_None')
-            
+
     #Nut Types
     Nut_Type_List = [('bf_Nut_Hex','HEX','Hex Nut'),
                     ('bf_Nut_Lock','LOCK','Lock Nut')]
@@ -93,18 +93,18 @@ class add_mesh_bolt(bpy.types.Operator):
             name='Nut Type',
             description='Choose the type of nut you would like',
             items = Nut_Type_List, default = 'bf_Nut_Hex')
-            
-    #Shank Types    
+
+    #Shank Types
     bf_Shank_Length = FloatProperty(attr='bf_Shank_Length',
             name='Shank Length', default = 0,
-            min = 0, soft_min = 0, max = MAX_INPUT_NUMBER, 
+            min = 0, soft_min = 0, max = MAX_INPUT_NUMBER,
             description='Length of the unthreaded shank')
-            
+
     bf_Shank_Dia = FloatProperty(attr='bf_Shank_Dia',
             name='Shank Dia', default = 3,
             min = 0, soft_min = 0,max = MAX_INPUT_NUMBER,
             description='Diameter of the shank')
-            
+
     bf_Phillips_Bit_Depth = FloatProperty(attr='bf_Phillips_Bit_Depth',
             name='Bit Depth', default = 0, #set in execute
             options = {'HIDDEN'}, #gets calculated in execute
@@ -115,12 +115,12 @@ class add_mesh_bolt(bpy.types.Operator):
             name='Bit Depth', default = 1.5,
             min = 0, soft_min = 0,max = MAX_INPUT_NUMBER,
             description='Depth of the Allen Bit')
-            
+
     bf_Allen_Bit_Flat_Distance = FloatProperty( attr='bf_Allen_Bit_Flat_Distance',
             name='Flat Dist', default = 2.5,
             min = 0, soft_min = 0, max = MAX_INPUT_NUMBER,
             description='Flat Distance of the Allen Bit')
-    
+
     bf_Hex_Head_Height = FloatProperty( attr='bf_Hex_Head_Height',
             name='Head Height', default = 2,
             min = 0, soft_min = 0, max = MAX_INPUT_NUMBER,
@@ -161,7 +161,7 @@ class add_mesh_bolt(bpy.types.Operator):
             options = {'HIDDEN'}, #gets calculated in execute
             min = 0, soft_min = 0,max = MAX_INPUT_NUMBER,
             description='Diameter of the Philips Bit')
-    
+
     bf_Thread_Length = FloatProperty( attr='bf_Thread_Length',
             name='Thread Length', default = 6,
             min = 0, soft_min = 0, max = MAX_INPUT_NUMBER,
@@ -182,7 +182,7 @@ class add_mesh_bolt(bpy.types.Operator):
             options = {'HIDDEN'}, #gets calculated in execute
             min = 0, soft_min = 0, max = MAX_INPUT_NUMBER,
             description='Inside diameter of the Thread')
-            
+
     bf_Crest_Percent = IntProperty( attr='bf_Crest_Percent',
             name='Crest Percent', default = 10,
             min = 1, soft_min = 1, max = 90,
@@ -217,7 +217,7 @@ class add_mesh_bolt(bpy.types.Operator):
     def draw(self, context):
         layout = self.layout
         col = layout.column()
-        
+
         #ENUMS
         col.prop(self, 'bf_Model_Type')
         col.prop(self, 'bf_presets')
@@ -282,7 +282,7 @@ class add_mesh_bolt(bpy.types.Operator):
 
     ##### EXECUTE #####
     def execute(self, context):
-    
+
         #print('EXECUTING...')
 
         if not self.last_preset or self.bf_presets != self.last_preset:
@@ -296,11 +296,11 @@ class add_mesh_bolt(bpy.types.Operator):
         #self.bf_Phillips_Bit_Depth = float(Get_Phillips_Bit_Height(self.bf_Philips_Bit_Dia))
         #self.bf_Philips_Bit_Dia = self.bf_Pan_Head_Dia*(1.82/5.6)
         #self.bf_Minor_Dia = self.bf_Major_Dia - (1.082532 * self.bf_Pitch)
-        
+
         Create_New_Mesh(self, context, self.align_matrix)
 
         return {'FINISHED'}
-        
+
     ##### INVOKE #####
     def invoke(self, context, event):
         #print('\n___________START_____________')
