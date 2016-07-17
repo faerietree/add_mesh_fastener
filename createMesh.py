@@ -17,6 +17,7 @@
 # ##### END GPL LICENSE BLOCK #####
 
 import bpy
+import sys
 import mathutils
 
 from math import *
@@ -129,8 +130,10 @@ def Scale_Mesh_Verts(verts, scale_factor):
 #Returns: Matrix object.
 #    A new rotation matrix.
 def Simple_RotationMatrix(angle, matSize, axisFlag):
+    # To avoid hardcoding Simple_RotationMatrix.__name__:
+    this_function_name = sys._getframe().f_code.co_name
     if matSize != 4 :
-        print ("Simple_RotationMatrix can only do 4x4")
+        print ("%s can only do 4x4" % (this_function_name))
 
     q = radians(angle)  #make the rotation go clockwise
 
@@ -141,7 +144,7 @@ def Simple_RotationMatrix(angle, matSize, axisFlag):
     elif axisFlag == 'z':
         matrix = mathutils.Matrix.Rotation(q, 4, 'Z')
     else:
-        print   ("Simple_RotationMatrix can only do x y z axis")
+        print   ("%s can only do x y z axis" % (this_function_name))
     return matrix
 
 
