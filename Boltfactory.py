@@ -130,7 +130,7 @@ class FastenerSettings(PropertyGroup):
             )
 
     # Shank Types
-    bf_Shank_Length = FloatProperty(attr='bf_Shank_Length',
+    bf_Shank_Length = FloatProperty(
             name='Shank Length', default = 0,
             min = 0, soft_min = 0, max = MAX_INPUT_NUMBER,
             description='Length of the unthreaded shank'
@@ -180,7 +180,7 @@ class FastenerSettings(PropertyGroup):
             ,update=update_settings_cb
             )
 
-    bf_CounterSink_Head_Dia = FloatProperty( attr='bf_CounterSink_Head_Dia',
+    bf_CounterSink_Head_Dia = FloatProperty(
             name='Head Dia', default = 5.5,
             min = 0, soft_min = 0, max = MAX_INPUT_NUMBER,
             description='Diameter of the Counter Sink Head'
@@ -406,7 +406,7 @@ class MESH_OT_update_fastener(bpy.types.Operator):
     """"""
     bl_idname = "mesh.fastener_update"
     bl_label = "Update fastener"
-    bl_options = {'REGISTER', 'UNDO', 'PRESET'}
+    bl_options = {'REGISTER', 'UNDO'}
     bl_description = "Update fasteners like bolts, screws, nuts."
 
 
