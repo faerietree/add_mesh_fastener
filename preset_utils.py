@@ -25,6 +25,7 @@ def getPresets():
     presetPath = os.path.join(scriptPath, "presets")
     presetFiles = os.listdir(presetPath)
     #presetFiles.sort()
+    presetFiles.append("custom.py")
 
     presets = [(presetFile, presetFile.rpartition(".")[0], presetFile)
                 for i, presetFile in enumerate(presetFiles) if presetFile.endswith(".py")]
@@ -38,7 +39,7 @@ def getPresets():
 
 
 def setProps(props, preset, presetsPath):
-    
+
     #bpy.ops.script.python_file_run(filepath=presetsPath + '\\' + preset)
 
     file = open(os.path.join(presetsPath, preset))

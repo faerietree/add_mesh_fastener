@@ -48,23 +48,37 @@ def align_matrix(context):
     return align_matrix
 
 
+def load_settings_from_preset_cb(self, context):
+    # prevent recursive call
+    if load_settings_from_preset_cb.level == False:
+        load_settings_from_preset_cb.level = True
+        settings = self
+
+        if settings.bf_preset != 'custom.py' and (not settings.last_preset or settings.bf_preset != settings.last_preset):
+            print("setting preset: ", settings.bf_preset)
+            print("presetsPath: ", settings.presetsPath)
+            setProps(settings, settings.bf_preset, settings.presetsPath)
+            # derive some properties:
+            settings.bf_Phillips_Bit_Depth = float(Get_Phillips_Bit_Height(settings.bf_Philips_Bit_Dia))
+            #settings.bf_Phillips_Bit_Depth = float(Get_Phillips_Bit_Height(settings.bf_Philips_Bit_Dia))
+            #settings.bf_Philips_Bit_Dia = settings.bf_Pan_Head_Dia*(1.82/5.6)
+            #settings.bf_Minor_Dia = settings.bf_Major_Dia - (1.082532 * settings.bf_Pitch)
+
+            # Store this preset as previous preset
+            settings.last_preset = settings.bf_preset
+
+        load_settings_from_preset_cb.level = False
+
+load_settings_from_preset_cb.level = False
+
+
+# Custom settings
 def update_settings_cb(self, context):
-    # annoying workaround for recursive call
+    # prevent recursive call
     if update_settings_cb.level == False:
         update_settings_cb.level = True
         settings = self
-
-        if not settings.last_preset or settings.bf_preset != settings.last_preset:
-            #print("setting preset: ", settings.bf_preset)
-            setProps(settings, settings.bf_preset, settings.presetsPath)
-            settings.bf_Phillips_Bit_Depth = float(Get_Phillips_Bit_Height(settings.bf_Philips_Bit_Dia))
-
-            settings.last_preset = settings.bf_preset
-
-        #settings.bf_Phillips_Bit_Depth = float(Get_Phillips_Bit_Height(settings.bf_Philips_Bit_Dia))
-        #settings.bf_Philips_Bit_Dia = settings.bf_Pan_Head_Dia*(1.82/5.6)
-        #settings.bf_Minor_Dia = settings.bf_Major_Dia - (1.082532 * settings.bf_Pitch)
-
+        settings.bf_preset = 'custom.py'
 
         if not settings.update_manually:
             bpy.ops.mesh.fastener_update()
@@ -285,7 +299,7 @@ class FastenerSettings(PropertyGroup):
             description="Use Preset from File",
             default='M3.py',
             items=presets
-            ,update=update_settings_cb
+            ,update=load_settings_from_preset_cb
             )
 
     last_preset = None
