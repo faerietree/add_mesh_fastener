@@ -1,5 +1,5 @@
 props.bf_Shank_Dia = 6.0
-props.bf_Pitch = 1.0  # Coarse
+props.bf_Pitch = 0.75  # Fine
 props.bf_Crest_Percent = 10
 props.bf_Root_Percent = 10
 props.bf_Major_Dia = 6.0
