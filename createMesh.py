@@ -25,10 +25,7 @@ from itertools import *
 
 NARROW_UI = 180
 
-#GLOBAL_SCALE = 0.001    # 1 blender unit = X mm
-#GLOBAL_SCALE = 0.01    # 1 blender unit = X mm
-GLOBAL_SCALE = 0.1    # 1 blender unit = X mm
-#GLOBAL_SCALE = 1.0    # 1 blender unit = X mm
+GLOBAL_SCALE = 1.0    # 1 blender unit = X mm
 
 
 
@@ -104,7 +101,8 @@ def Scale_Mesh_Verts(verts, scale_factor):
     # Scale according to scene unit settings (metric, imperial,
     # scale factor). Otherwise the mesh will is too small / big.
     # TODO Use scale_length alone and remove scale_factor?
-    scale_factor = bpy.context.scene.unit_settings.scale_length / scale_factor
+    print("scale_factor: %s  / scale_length: %s" % (scale_factor, bpy.context.scene.unit_settings.scale_length))
+    scale_factor = scale_factor / bpy.context.scene.unit_settings.scale_length
     verts_scaled = []
     for v in verts:
         verts_scaled.append([v[0]*scale_factor,v[1]*scale_factor,v[2]*scale_factor])
