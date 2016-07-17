@@ -7,7 +7,7 @@ Add Mesh Fastener (Fastener Generator)
 <img src="present/fastener_factory_enable_and_gui_location.jpg" alt="" title="Examples, enable & GUI settings location"/>
 
 
-How to install the easiest, sustained worlddevelopment way:
+How to install the easy, sustained worlddevelopment way:
 ---
 Prerequisites:
 * UNIX
