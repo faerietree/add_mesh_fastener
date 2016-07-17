@@ -137,12 +137,9 @@ def Simple_RotationMatrix(angle, matSize, axisFlag):
 
     q = radians(angle)  #make the rotation go clockwise
 
-    if axisFlag == 'x':
-        matrix = mathutils.Matrix.Rotation(q, 4, 'X')
-    elif  axisFlag == 'y':
-        matrix = mathutils.Matrix.Rotation(q, 4, 'Y')
-    elif axisFlag == 'z':
-        matrix = mathutils.Matrix.Rotation(q, 4, 'Z')
+    if axisFlag == 'x' or axisFlag == 'y' or axisFlag == 'z':
+        # While strings in python are immutable, chars are not:
+        matrix = mathutils.Matrix.Rotation(q, 4, axisFlag.upper())
     else:
         print   ("%s can only do x y z axis" % (this_function_name))
     return matrix
