@@ -33,6 +33,7 @@ from add_mesh_fastener.preset_utils import *
 
 
 
+
 ##------------------------------------------------------------
 # calculates the matrix for the new object
 # depending on user pref
@@ -53,10 +54,13 @@ def load_settings_from_preset_cb(self, context):
     if load_settings_from_preset_cb.level == False:
         load_settings_from_preset_cb.level = True
         settings = self
+        print("load_settings_from_preset_cb: ", self)
 
         if settings.bf_preset != 'custom.py' and (not settings.last_preset or settings.bf_preset != settings.last_preset):
-            print("setting preset: ", settings.bf_preset)
-            print("presetsPath: ", settings.presetsPath)
+            #print("setting preset: ", settings.bf_preset)
+            #print("presetsPath: ", settings.presetsPath)
+            update_manually_previous = settings.update_manually
+            settings.update_manually = True 
             setProps(settings, settings.bf_preset, settings.presetsPath)
             # derive some properties:
             settings.bf_Phillips_Bit_Depth = float(Get_Phillips_Bit_Height(settings.bf_Philips_Bit_Dia))
@@ -66,19 +70,71 @@ def load_settings_from_preset_cb(self, context):
 
             # Store this preset as previous preset
             settings.last_preset = settings.bf_preset
+            settings.update_manually = update_manually_previous
+            if not settings.update_manually:
+                bpy.ops.mesh.fastener_update()
 
         load_settings_from_preset_cb.level = False
 
 load_settings_from_preset_cb.level = False
 
 
+#def is_instance_of_one_or_classes(obj, classes)
+#def is_within_properties_to_detect_out_of_sync_of(obj):
+#    print(obj.__class__, " ==? ", type(obj))
+#    return isinstance(obj, (IntProperty,FloatProperty,StringProperty,EnumProperty,BoolProperty)
+#        )
+property_keys_to_exclude_from_out_of_sync_detection = [
+        'rna'
+        ,
+        ]
+
+def are_settings_out_of_sync(settings, context):
+    #for key,s in settings.__dict__.iteritems():
+    prop_keys_candidates = [p_key for p_key in dir(settings) if not p_key.startswith('__') and not p_key.endswith('List') and p_key.startswith("bf_") and not callable(getattr(settings,p_key))]
+    is_out_of_sync = False
+    # Important: Finish this loop to have checked every property once because else when aborting then the next time this method returns out of sync again while it has been fully synced for sure when the update operator is run!
+    prop_keys = []
+    for p_key in prop_keys_candidates:
+        p_value = getattr(settings, p_key)
+        #print("p key: ", p_key, " => ", p_value)
+        #print("p type: ", type(p_value))
+        #if not is_within_properties_to_detect_out_of_sync_of(p_value):
+        if p_value in property_keys_to_exclude_from_out_of_sync_detection:
+            print("Property is excluded from out of sync detection. Skipping ...")
+            continue
+        prop_keys.append(p_key)
+        if not p_key in are_settings_out_of_sync.prop_key_to_value_map:
+            #print("Not stored yet. Marking for storing.")
+            is_out_of_sync = True
+        elif are_settings_out_of_sync.prop_key_to_value_map[p_key] != p_value:
+            #print("Value changed from %s to %s. Marking for update." % (are_settings_out_of_sync.prop_key_to_value_map[p_key], p_value))
+            is_out_of_sync = True
+    # Do not store anything if nothing is out of sync:
+    if not is_out_of_sync:
+        return False
+    # Else store all new prop values to be sure:
+    for p_key in prop_keys:
+        p_value = getattr(settings, p_key)
+        if not p_key in are_settings_out_of_sync.prop_key_to_value_map or are_settings_out_of_sync.prop_key_to_value_map[p_key] != p_value:
+            #print("storing new property value: ", p_key)
+            are_settings_out_of_sync.prop_key_to_value_map[p_key] = p_value
+    return True
+
+are_settings_out_of_sync.prop_key_to_value_map = {}
+
+
 # Custom settings
 def update_settings_cb(self, context):
+    #print("update_settings_cb")
     # prevent recursive call
     if update_settings_cb.level == False:
+        if not are_settings_out_of_sync(self, context):
+            print("Settings not out of sync. Doing nothing.")
+            return
         update_settings_cb.level = True
         settings = self
-        settings.bf_preset = 'custom.py'
+        #settings.bf_preset = 'custom.py'
 
         if not settings.update_manually:
             bpy.ops.mesh.fastener_update()
@@ -97,7 +153,7 @@ class FastenerSettings(PropertyGroup):
             name="Update manually"
             ,description="If enabled apply settings manually instead of realtime update."
             ,default=False
-            ,update=update_settings_cb
+            #,update=update_settings_cb
     )
 
     # Model Types
@@ -399,7 +455,7 @@ class MESH_OT_add_fastener(bpy.types.Operator):
 
     ##### EXECUTE #####
     def execute(self, context):
-        #print('EXECUTING...')
+        print('EXECUTING add fastener ...')
         scene = context.scene
 
         # Create new object
@@ -437,7 +493,7 @@ class MESH_OT_update_fastener(bpy.types.Operator):
 
 
     def execute(self, context):
-        #print('EXECUTING...')
+        print('EXECUTING update fastener ...')
         obj = context.scene.objects.active
         settings = obj.fastener_settings
 
@@ -451,7 +507,7 @@ class MESH_OT_update_fastener(bpy.types.Operator):
 
 
     def invoke(self, context, event):
-        #print("\n___________START_____________")
+        print("\n___________INVOKE Fastener Update_____________")
         # store creation_matrix
         self.align_matrix = align_matrix(context)
         self.execute(context)
