@@ -101,7 +101,7 @@ def Scale_Mesh_Verts(verts, scale_factor):
     # Scale according to scene unit settings (metric, imperial,
     # scale factor). Otherwise the mesh will is too small / big.
     # TODO Use scale_length alone and remove scale_factor?
-    print("scale_factor: %s  / scale_length: %s" % (scale_factor, bpy.context.scene.unit_settings.scale_length))
+    #print("scale_factor: %s  / scale_length: %s" % (scale_factor, bpy.context.scene.unit_settings.scale_length))
     scale_factor = scale_factor / bpy.context.scene.unit_settings.scale_length
     verts_scaled = []
     for v in verts:
@@ -2033,6 +2033,7 @@ def Bolt_Mesh(props, context):
 # name ... If not empty, override name of the mesh, object.
 # Note: Destroys / deletes existing mesh data.
 def create_geometry(context, verts, edges, faces, align_matrix, name=''):
+    #print("create_geometry")
     scene = context.scene
     obj = scene.objects.active
 
@@ -2040,9 +2041,9 @@ def create_geometry(context, verts, edges, faces, align_matrix, name=''):
     if not obj:
         return None
     # Deselect all objects when in object mode
-    if bpy.ops.object.select_all.poll():
-        bpy.ops.object.select_all(action='DESELECT')
-    obj.select = True
+    #if bpy.ops.object.select_all.poll():
+    #    bpy.ops.object.select_all(action='DESELECT')
+    #obj.select = True
 
     mode_previous = None
     if obj.mode != 'OBJECT':
@@ -2060,7 +2061,7 @@ def create_geometry(context, verts, edges, faces, align_matrix, name=''):
         mesh = bpy.data.meshes.new(name=obj.name)
         return {'CANCELLED'}
     else:
-        print("Using existing mesh: ", obj.data)
+        #print("Using existing mesh: ", obj.data)
         mesh = obj.data
 
     # ALTERNATIVE to fix internal error array mismatch:
@@ -2079,25 +2080,25 @@ def create_geometry(context, verts, edges, faces, align_matrix, name=''):
     mesh_old = obj.data
     # Set object data to nothing
     obj.data = None
-    # Clear users of existing mesh datablock.
-    mesh_old.user_clear()
-    # Remove old mesh datablock if no users are left.
+    # Remove old mesh datablock if no users are left. This is not problematic because linking groups should be preferred over linking meshes. Because as library linked users are not taken into account in the users count!).
     if (mesh_old.users == 0):
         bpy.data.meshes.remove(mesh_old)
     # Assign new mesh datablock.
     obj.data = mesh
 
-    if mode_previous:
+    if mode_previous != None:
         # Switching back to e.g. EditMode.
         bpy.ops.object.mode_set(mode=mode_previous)
 
 
+    #print("create geometry end")
     return {'FINISHED'}
 
 
 
 
 def Create_New_Mesh(props, context, align_matrix):
+    #print("Create new mesh")
 
     verts = []
     faces = []
