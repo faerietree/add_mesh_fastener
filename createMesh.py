@@ -2032,7 +2032,7 @@ def Bolt_Mesh(props, context):
 #                       new mesh (as used in from_pydata).
 # name ... If not empty, override name of the mesh, object.
 # Note: Destroys / deletes existing mesh data.
-def create_geometry(context, verts, edges, faces, align_matrix, name=''):
+def create_geometry(context, verts, edges, faces, name=''):
     #print("create_geometry")
     scene = context.scene
     obj = scene.objects.active
@@ -2050,9 +2050,6 @@ def create_geometry(context, verts, edges, faces, align_matrix, name=''):
         print('Fastener_update(): Switching to OBJECT mode.')
         mode_previous = obj.mode
         bpy.ops.object.mode_set(mode='OBJECT')
-
-    # Apply location of new object after having set the view's align matrix.
-    scene.update()
 
     # Get existing mesh (may be linked) or create new.
     mesh = None
@@ -2097,7 +2094,7 @@ def create_geometry(context, verts, edges, faces, align_matrix, name=''):
 
 
 
-def Create_New_Mesh(props, context, align_matrix):
+def Create_New_Mesh(props, context):
     #print("Create new mesh")
 
     verts = []
@@ -2121,7 +2118,7 @@ def Create_New_Mesh(props, context, align_matrix):
 
     verts = Scale_Mesh_Verts(verts, GLOBAL_SCALE)
 
-    create_geometry(context, verts, [], faces, sObjName, align_matrix)
+    create_geometry(context, verts, [], faces, sObjName)
 
     return {'FINISHED'}
 

@@ -60,7 +60,7 @@ def load_settings_from_preset_cb(self, context):
             #print("setting preset: ", settings.bf_preset)
             #print("presetsPath: ", settings.presetsPath)
             update_manually_previous = settings.update_manually
-            settings.update_manually = True 
+            settings.update_manually = True
             setProps(settings, settings.bf_preset, settings.presetsPath)
             # derive some properties:
             settings.bf_Phillips_Bit_Depth = float(Get_Phillips_Bit_Height(settings.bf_Philips_Bit_Dia))
@@ -446,6 +446,10 @@ class MESH_OT_add_fastener(bpy.types.Operator):
     bl_description = "Generate fasteners like bolts, screws, nuts."
 
 
+    ##### PROPERTIES
+    align_matrix = mathutils.Matrix()
+
+
     ##### POLL #####
     @classmethod
     def poll(cls, context):
@@ -468,7 +472,22 @@ class MESH_OT_add_fastener(bpy.types.Operator):
         scene.objects.active = obj
         scene.objects.active.select
 
+        # Place the object at the 3D cursor location.
+        # apply viewRotation
+        obj.matrix_world = self.align_matrix
+        # Apply location of new object after having set the view's align matrix.
+        scene.update()
+
         return bpy.ops.mesh.fastener_update()
+
+
+    def invoke(self, context, event):
+        print("\n___________INVOKE Fastener add_____________")
+        # store creation_matrix
+        self.align_matrix = align_matrix(context)
+        self.execute(context)
+
+        return {'FINISHED'}
 
 
 
@@ -478,10 +497,6 @@ class MESH_OT_update_fastener(bpy.types.Operator):
     bl_label = "Update fastener"
     bl_options = {'REGISTER', 'UNDO'}
     bl_description = "Update fasteners like bolts, screws, nuts."
-
-
-    ##### PROPERTIES
-    align_matrix = mathutils.Matrix()
 
 
     ##### METHODS
@@ -497,20 +512,9 @@ class MESH_OT_update_fastener(bpy.types.Operator):
         obj = context.scene.objects.active
         settings = obj.fastener_settings
 
-        # Place the object at the 3D cursor location.
-        # apply viewRotaion
-        obj.matrix_world = self.align_matrix
-
-        Create_New_Mesh(settings, context, self.align_matrix)
+        Create_New_Mesh(settings, context)
 
         return {'FINISHED'}
 
 
-    def invoke(self, context, event):
-        print("\n___________INVOKE Fastener Update_____________")
-        # store creation_matrix
-        self.align_matrix = align_matrix(context)
-        self.execute(context)
-
-        return {'FINISHED'}
 
