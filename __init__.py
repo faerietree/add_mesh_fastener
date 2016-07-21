@@ -32,7 +32,8 @@ if "bpy" in locals():
     import imp
     imp.reload(Boltfactory)
 else:
-    from add_mesh_fastener import Boltfactory
+    from . import Boltfactory
+    #sys.modules[__name__] for properties or something like glob
 
 import bpy
 from bpy.props import (
