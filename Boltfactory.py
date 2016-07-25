@@ -170,6 +170,7 @@ class FastenerSettings(PropertyGroup):
                         ('bf_Head_Cap','CAP','Cap Head'),
                         ('bf_Head_Dome','DOME','Dome Head'),
                         ('bf_Head_Pan','PAN','Pan Head'),
+                        ('bf_Head_Square','SQUARE','Square Head'),
                         ('bf_Head_CounterSink','COUNTER SINK','Counter Sink Head')]
     bf_Head_Type = EnumProperty( attr='bf_Head_Type',
             name='Head Type',
@@ -191,6 +192,7 @@ class FastenerSettings(PropertyGroup):
 
     # Nut Types
     Nut_Type_List = [('bf_Nut_Hex','HEX','Hex Nut'),
+                    ('bf_Nut_Square','SQUARE','Square Nut'),
                     ('bf_Nut_Lock','LOCK','Lock Nut')]
     bf_Nut_Type = EnumProperty( attr='bf_Nut_Type',
             name='Nut Type',

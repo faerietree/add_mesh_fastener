@@ -722,43 +722,57 @@ def Create_Cap_Head(HOLE_DIA,HEAD_DIA,SHANK_DIA,HEIGHT,RAD1,RAD2):
     return sVerts,faces,HEIGHT+RAD2
 
 
-def Create_Hex_Head(FLAT,HOLE_DIA,SHANK_DIA,HEIGHT):
+# FLAT := flat to flat distance
+def Create_Square_Head(FLAT_DIA, HOLE_DIA, SHANK_DIA, HEIGHT):
+    return create_geometry_head(FLAT_DIA, HOLE_DIA, SHANK_DIA, HEIGHT, 90)
 
+def Create_Hex_Head(FLAT_DIA, HOLE_DIA, SHANK_DIA, HEIGHT):
+    return create_geometry_head(FLAT_DIA, HOLE_DIA, SHANK_DIA, HEIGHT, 60)
+
+
+def create_geometry_head(FLAT_DIA, HOLE_DIA, SHANK_DIA, HEIGHT, arc_deg):
     verts = []
     faces = []
-    HOLE_RADIUS = HOLE_DIA * 0.5
-    Half_Flat = FLAT/2
-    TopBevelRadius = Half_Flat - (Half_Flat* (0.05/8))
-    Undercut_Height = (Half_Flat* (0.05/8))
-    Shank_Bevel = (Half_Flat* (0.05/8))
-    Flat_Height = HEIGHT - Undercut_Height - Shank_Bevel
+    hole_r = HOLE_DIA * 0.5
+    FLAT_RADIUS = FLAT_DIA / 2
+    factor = HEIGHT / 100 / 8  # / 100 because modeling with 1m := 1mm according to worlddevelopment standards
+    TopBevelRadius = FLAT_RADIUS - FLAT_RADIUS * factor
+    Undercut_Height = FLAT_RADIUS * factor
     #Undercut_Height = 5
-    SHANK_RADIUS = SHANK_DIA/2
+    Shank_Bevel = FLAT_RADIUS * factor
+    Flat_Height = HEIGHT - Undercut_Height - Shank_Bevel
+    # TODO Make bevel relative to head height.
+    #print("Factor: %s; Flat Height %s = HEIGHT %s - Undercut_Height %s - Shank_Bevel %s" % (factor, Flat_Height, HEIGHT, Undercut_Height, Shank_Bevel))
+    SHANK_RADIUS = SHANK_DIA / 2
     Row = 0;
 
     verts.append([0.0,0.0,0.0])
 
 
     FaceStart = len(verts)
+
+    # The following defines the bottom vertices of one half
+    # of one segment/arc of arc_deg degree.
+    # => verts_defined of deg / 2. e.g. 90/2 degree = 45 degree
+
     #inner hole
-
-    x = sin(radians(0))*HOLE_RADIUS
-    y = cos(radians(0))*HOLE_RADIUS
+    x = sin(radians(0)) * hole_r
+    y = cos(radians(0)) * hole_r
     verts.append([x,y,0.0])
 
 
-    x = sin(radians(60/6))*HOLE_RADIUS
-    y = cos(radians(60/6))*HOLE_RADIUS
+    x = sin(radians(arc_deg/6)) * hole_r
+    y = cos(radians(arc_deg/6)) * hole_r
     verts.append([x,y,0.0])
 
 
-    x = sin(radians(60/3))*HOLE_RADIUS
-    y = cos(radians(60/3))*HOLE_RADIUS
+    x = sin(radians(arc_deg/3)) * hole_r
+    y = cos(radians(arc_deg/3)) * hole_r
     verts.append([x,y,0.0])
 
 
-    x = sin(radians(60/2))*HOLE_RADIUS
-    y = cos(radians(60/2))*HOLE_RADIUS
+    x = sin(radians(arc_deg/2)) * hole_r
+    y = cos(radians(arc_deg/2)) * hole_r
     verts.append([x,y,0.0])
     Row += 1
 
@@ -770,119 +784,118 @@ def Create_Hex_Head(FLAT,HOLE_DIA,SHANK_DIA,HEIGHT):
     verts.append([x,y,0.0])
 
 
-    x = sin(radians(60/6))*TopBevelRadius
-    y = cos(radians(60/6))*TopBevelRadius
+    x = sin(radians(arc_deg/6))*TopBevelRadius
+    y = cos(radians(arc_deg/6))*TopBevelRadius
     vec2 = mathutils.Vector([x,y,0.0])
     verts.append([x,y,0.0])
 
 
-    x = sin(radians(60/3))*TopBevelRadius
-    y = cos(radians(60/3))*TopBevelRadius
+    x = sin(radians(arc_deg/3))*TopBevelRadius
+    y = cos(radians(arc_deg/3))*TopBevelRadius
     vec3 = mathutils.Vector([x,y,0.0])
     verts.append([x,y,0.0])
 
 
-    x = sin(radians(60/2))*TopBevelRadius
-    y = cos(radians(60/2))*TopBevelRadius
+    x = sin(radians(arc_deg/2))*TopBevelRadius
+    y = cos(radians(arc_deg/2))*TopBevelRadius
     vec4 = mathutils.Vector([x,y,0.0])
     verts.append([x,y,0.0])
     Row += 1
 
-    #Flats
+    # flat
+    x = tan(radians(0)) * FLAT_RADIUS
+    dvec = vec1 - mathutils.Vector([x,FLAT_RADIUS,0.0])
+    verts.append([x,FLAT_RADIUS,-dvec.length])
 
-    x = tan(radians(0))*Half_Flat
-    dvec = vec1 - mathutils.Vector([x,Half_Flat,0.0])
-    verts.append([x,Half_Flat,-dvec.length])
+    # due to bevel:
+    x = tan(radians(arc_deg/6)) * FLAT_RADIUS
+    dvec = vec2 - mathutils.Vector([x,FLAT_RADIUS,0.0])
+    z_min = -dvec.length
+    verts.append([x,FLAT_RADIUS,-dvec.length])
 
+    x = tan(radians(arc_deg/3)) * FLAT_RADIUS
+    dvec = vec3 - mathutils.Vector([x,FLAT_RADIUS,0.0])
+    z_min = min(z_min, -dvec.length)
+    verts.append([x,FLAT_RADIUS,-dvec.length])
 
-    x = tan(radians(60/6))*Half_Flat
-    dvec = vec2 - mathutils.Vector([x,Half_Flat,0.0])
-    verts.append([x,Half_Flat,-dvec.length])
+    x = tan(radians(arc_deg/2)) * FLAT_RADIUS
+    dvec = vec4 - mathutils.Vector([x,FLAT_RADIUS,0.0])
+    z_min = min(z_min, -dvec.length)
+    verts.append([x,FLAT_RADIUS,-dvec.length])
 
-
-    x = tan(radians(60/3))*Half_Flat
-    dvec = vec3 - mathutils.Vector([x,Half_Flat,0.0])
-    Lowest_Point = -dvec.length
-    verts.append([x,Half_Flat,-dvec.length])
-
-
-    x = tan(radians(60/2))*Half_Flat
-    dvec = vec4 - mathutils.Vector([x,Half_Flat,0.0])
-    Lowest_Point = -dvec.length
-    verts.append([x,Half_Flat,-dvec.length])
     Row += 1
 
     #down Bits Tri
-    x = tan(radians(0))*Half_Flat
-    verts.append([x,Half_Flat,Lowest_Point])
+    x = tan(radians(0)) * FLAT_RADIUS
+    verts.append([x,FLAT_RADIUS,z_min])
 
-    x = tan(radians(60/6))*Half_Flat
-    verts.append([x,Half_Flat,Lowest_Point])
+    x = tan(radians(arc_deg/6)) * FLAT_RADIUS
+    verts.append([x,FLAT_RADIUS,z_min])
 
-    x = tan(radians(60/3))*Half_Flat
-    verts.append([x,Half_Flat,Lowest_Point])
+    x = tan(radians(arc_deg/3)) * FLAT_RADIUS
+    verts.append([x,FLAT_RADIUS,z_min])
 
-    x = tan(radians(60/2))*Half_Flat
-    verts.append([x,Half_Flat,Lowest_Point])
+    x = tan(radians(arc_deg/2)) * FLAT_RADIUS
+    verts.append([x,FLAT_RADIUS,z_min])
     Row += 1
 
     #down Bits
 
-    x = tan(radians(0))*Half_Flat
-    verts.append([x,Half_Flat,-Flat_Height])
+    x = tan(radians(0)) * FLAT_RADIUS
+    verts.append([x,FLAT_RADIUS,-Flat_Height])
 
-    x = tan(radians(60/6))*Half_Flat
-    verts.append([x,Half_Flat,-Flat_Height])
+    x = tan(radians(arc_deg/6)) * FLAT_RADIUS
+    verts.append([x,FLAT_RADIUS,-Flat_Height])
 
-    x = tan(radians(60/3))*Half_Flat
-    verts.append([x,Half_Flat,-Flat_Height])
+    x = tan(radians(arc_deg/3)) * FLAT_RADIUS
+    verts.append([x,FLAT_RADIUS,-Flat_Height])
 
-    x = tan(radians(60/2))*Half_Flat
-    verts.append([x,Half_Flat,-Flat_Height])
+    x = tan(radians(arc_deg/2)) * FLAT_RADIUS
+    verts.append([x,FLAT_RADIUS,-Flat_Height])
     Row += 1
 
 
     #under cut
 
-    x = sin(radians(0))*Half_Flat
-    y = cos(radians(0))*Half_Flat
+    x = sin(radians(0)) * FLAT_RADIUS
+    y = cos(radians(0)) * FLAT_RADIUS
     vec1 = mathutils.Vector([x,y,0.0])
     verts.append([x,y,-Flat_Height])
 
-    x = sin(radians(60/6))*Half_Flat
-    y = cos(radians(60/6))*Half_Flat
+    x = sin(radians(arc_deg/6)) * FLAT_RADIUS
+    y = cos(radians(arc_deg/6)) * FLAT_RADIUS
     vec2 = mathutils.Vector([x,y,0.0])
     verts.append([x,y,-Flat_Height])
 
-    x = sin(radians(60/3))*Half_Flat
-    y = cos(radians(60/3))*Half_Flat
+    x = sin(radians(arc_deg/3)) * FLAT_RADIUS
+    y = cos(radians(arc_deg/3)) * FLAT_RADIUS
     vec3 = mathutils.Vector([x,y,0.0])
     verts.append([x,y,-Flat_Height])
 
-    x = sin(radians(60/2))*Half_Flat
-    y = cos(radians(60/2))*Half_Flat
+    x = sin(radians(arc_deg/2)) * FLAT_RADIUS
+    y = cos(radians(arc_deg/2)) * FLAT_RADIUS
     vec3 = mathutils.Vector([x,y,0.0])
     verts.append([x,y,-Flat_Height])
     Row += 1
 
     #under cut down bit
-    x = sin(radians(0))*Half_Flat
-    y = cos(radians(0))*Half_Flat
+    x = sin(radians(0)) * FLAT_RADIUS
+    y = cos(radians(0)) * FLAT_RADIUS
     vec1 = mathutils.Vector([x,y,0.0])
     verts.append([x,y,-Flat_Height-Undercut_Height])
 
-    x = sin(radians(60/6))*Half_Flat
-    y = cos(radians(60/6))*Half_Flat
+    x = sin(radians(arc_deg/6)) * FLAT_RADIUS
+    y = cos(radians(arc_deg/6)) * FLAT_RADIUS
     vec2 = mathutils.Vector([x,y,0.0])
     verts.append([x,y,-Flat_Height-Undercut_Height])
 
-    x = sin(radians(60/3))*Half_Flat
-    y = cos(radians(60/3))*Half_Flat
+    x = sin(radians(arc_deg/3)) * FLAT_RADIUS
+    y = cos(radians(arc_deg/3)) * FLAT_RADIUS
     vec3 = mathutils.Vector([x,y,0.0])
     verts.append([x,y,-Flat_Height-Undercut_Height])
 
-    x = sin(radians(60/2))*Half_Flat
-    y = cos(radians(60/2))*Half_Flat
+    x = sin(radians(arc_deg/2)) * FLAT_RADIUS
+    y = cos(radians(arc_deg/2)) * FLAT_RADIUS
     vec3 = mathutils.Vector([x,y,0.0])
     verts.append([x,y,-Flat_Height-Undercut_Height])
     Row += 1
@@ -893,18 +906,18 @@ def Create_Hex_Head(FLAT,HOLE_DIA,SHANK_DIA,HEIGHT):
     vec1 = mathutils.Vector([x,y,0.0])
     verts.append([x,y,-Flat_Height-Undercut_Height])
 
-    x = sin(radians(60/6))*(SHANK_RADIUS+Shank_Bevel)
-    y = cos(radians(60/6))*(SHANK_RADIUS+Shank_Bevel)
+    x = sin(radians(arc_deg/6))*(SHANK_RADIUS+Shank_Bevel)
+    y = cos(radians(arc_deg/6))*(SHANK_RADIUS+Shank_Bevel)
     vec2 = mathutils.Vector([x,y,0.0])
     verts.append([x,y,-Flat_Height-Undercut_Height])
 
-    x = sin(radians(60/3))*(SHANK_RADIUS+Shank_Bevel)
-    y = cos(radians(60/3))*(SHANK_RADIUS+Shank_Bevel)
+    x = sin(radians(arc_deg/3))*(SHANK_RADIUS+Shank_Bevel)
+    y = cos(radians(arc_deg/3))*(SHANK_RADIUS+Shank_Bevel)
     vec3 = mathutils.Vector([x,y,0.0])
     verts.append([x,y,-Flat_Height-Undercut_Height])
 
-    x = sin(radians(60/2))*(SHANK_RADIUS+Shank_Bevel)
-    y = cos(radians(60/2))*(SHANK_RADIUS+Shank_Bevel)
+    x = sin(radians(arc_deg/2))*(SHANK_RADIUS+Shank_Bevel)
+    y = cos(radians(arc_deg/2))*(SHANK_RADIUS+Shank_Bevel)
     vec3 = mathutils.Vector([x,y,0.0])
     verts.append([x,y,-Flat_Height-Undercut_Height])
     Row += 1
@@ -915,18 +928,18 @@ def Create_Hex_Head(FLAT,HOLE_DIA,SHANK_DIA,HEIGHT):
     vec1 = mathutils.Vector([x,y,0.0])
     verts.append([x,y,-Flat_Height-Undercut_Height-Shank_Bevel])
 
-    x = sin(radians(60/6))*SHANK_RADIUS
-    y = cos(radians(60/6))*SHANK_RADIUS
+    x = sin(radians(arc_deg/6))*SHANK_RADIUS
+    y = cos(radians(arc_deg/6))*SHANK_RADIUS
     vec2 = mathutils.Vector([x,y,0.0])
     verts.append([x,y,-Flat_Height-Undercut_Height-Shank_Bevel])
 
-    x = sin(radians(60/3))*SHANK_RADIUS
-    y = cos(radians(60/3))*SHANK_RADIUS
+    x = sin(radians(arc_deg/3))*SHANK_RADIUS
+    y = cos(radians(arc_deg/3))*SHANK_RADIUS
     vec3 = mathutils.Vector([x,y,0.0])
     verts.append([x,y,-Flat_Height-Undercut_Height-Shank_Bevel])
 
-    x = sin(radians(60/2))*SHANK_RADIUS
-    y = cos(radians(60/2))*SHANK_RADIUS
+    x = sin(radians(arc_deg/2))*SHANK_RADIUS
+    y = cos(radians(arc_deg/2))*SHANK_RADIUS
     vec3 = mathutils.Vector([x,y,0.0])
     verts.append([x,y,-Flat_Height-Undercut_Height-Shank_Bevel])
     Row += 1
@@ -940,10 +953,12 @@ def Create_Hex_Head(FLAT,HOLE_DIA,SHANK_DIA,HEIGHT):
     verts.extend(Mirror_Verts)
     faces.extend(Mirror_Faces)
 
-    Spin_Verts,Spin_Faces = SpinDup(verts,faces,360,6,'z')
+    Spin_Verts,Spin_Faces = SpinDup(verts,faces,360,360/arc_deg,'z')
 
 
     return Spin_Verts,Spin_Faces,0 - (-HEIGHT)
+
+
 
 
 ##########################################################################################
@@ -1417,16 +1432,23 @@ def Create_External_Thread(SHANK_DIA,SHANK_LENGTH,INNER_DIA,OUTTER_DIA,PITCH,LEN
 ##########################################################################################
 ##########################################################################################
 
+def add_Square_Nut(FLAT,HOLE_DIA,HEIGHT):
+    return create_geometry_nut(FLAT, HOLE_DIA, HEIGHT, 90)
+
 def add_Hex_Nut(FLAT,HOLE_DIA,HEIGHT):
+    return create_geometry_nut(FLAT, HOLE_DIA, HEIGHT, 60)
+
+def create_geometry_nut(FLAT,HOLE_DIA,HEIGHT, arc_deg):
     global Global_Head_Height
     global Global_NutRad
 
     verts = []
     faces = []
     HOLE_RADIUS = HOLE_DIA * 0.5
-    Half_Flat = FLAT/2
+    FLAT_RADIUS = FLAT/2
     Half_Height = HEIGHT/2
-    TopBevelRadius = Half_Flat - 0.05
+    # TODO Make bevel relative to head height.
+    TopBevelRadius = FLAT_RADIUS - .05
 
     Global_NutRad =  TopBevelRadius
 
@@ -1445,21 +1467,21 @@ def add_Hex_Nut(FLAT,HOLE_DIA,HEIGHT):
     verts.append([x,y,0.0])
 
 
-    x = sin(radians(60/6))*HOLE_RADIUS
-    y = cos(radians(60/6))*HOLE_RADIUS
-    #print ("rad 60/6x;",  x,  "y:" ,y )
+    x = sin(radians(arc_deg/6))*HOLE_RADIUS
+    y = cos(radians(arc_deg/6))*HOLE_RADIUS
+    #print ("rad arc_deg/6x;",  x,  "y:" ,y )
     verts.append([x,y,0.0])
 
 
-    x = sin(radians(60/3))*HOLE_RADIUS
-    y = cos(radians(60/3))*HOLE_RADIUS
-    #print ("rad 60/3x;",  x,  "y:" ,y )
+    x = sin(radians(arc_deg/3))*HOLE_RADIUS
+    y = cos(radians(arc_deg/3))*HOLE_RADIUS
+    #print ("rad arc_deg/3x;",  x,  "y:" ,y )
     verts.append([x,y,0.0])
 
 
-    x = sin(radians(60/2))*HOLE_RADIUS
-    y = cos(radians(60/2))*HOLE_RADIUS
-    #print ("rad 60/2x;",  x,  "y:" ,y )
+    x = sin(radians(arc_deg/2))*HOLE_RADIUS
+    y = cos(radians(arc_deg/2))*HOLE_RADIUS
+    #print ("rad arc_deg/2x;",  x,  "y:" ,y )
     verts.append([x,y,0.0])
     Row += 1
 
@@ -1472,79 +1494,79 @@ def add_Hex_Nut(FLAT,HOLE_DIA,HEIGHT):
     verts.append([x,y,0.0])
 
 
-    x = sin(radians(60/6))*TopBevelRadius
-    y = cos(radians(60/6))*TopBevelRadius
+    x = sin(radians(arc_deg/6))*TopBevelRadius
+    y = cos(radians(arc_deg/6))*TopBevelRadius
     vec2 = mathutils.Vector([x,y,0.0])
     verts.append([x,y,0.0])
 
 
-    x = sin(radians(60/3))*TopBevelRadius
-    y = cos(radians(60/3))*TopBevelRadius
+    x = sin(radians(arc_deg/3))*TopBevelRadius
+    y = cos(radians(arc_deg/3))*TopBevelRadius
     vec3 = mathutils.Vector([x,y,0.0])
     verts.append([x,y,0.0])
 
 
-    x = sin(radians(60/2))*TopBevelRadius
-    y = cos(radians(60/2))*TopBevelRadius
+    x = sin(radians(arc_deg/2))*TopBevelRadius
+    y = cos(radians(arc_deg/2))*TopBevelRadius
     vec4 = mathutils.Vector([x,y,0.0])
     verts.append([x,y,0.0])
     Row += 1
 
     #Flats
 
-    x = tan(radians(0))*Half_Flat
-    dvec = vec1 - mathutils.Vector([x,Half_Flat,0.0])
-    verts.append([x,Half_Flat,-dvec.length])
+    x = tan(radians(0)) * FLAT_RADIUS
+    dvec = vec1 - mathutils.Vector([x,FLAT_RADIUS,0.0])
+    verts.append([x,FLAT_RADIUS,-dvec.length])
     Lowest_Z_Vert = min(Lowest_Z_Vert,-dvec.length)
 
 
-    x = tan(radians(60/6))*Half_Flat
-    dvec = vec2 - mathutils.Vector([x,Half_Flat,0.0])
-    verts.append([x,Half_Flat,-dvec.length])
+    x = tan(radians(arc_deg/6)) * FLAT_RADIUS
+    dvec = vec2 - mathutils.Vector([x,FLAT_RADIUS,0.0])
+    verts.append([x,FLAT_RADIUS,-dvec.length])
     Lowest_Z_Vert = min(Lowest_Z_Vert,-dvec.length)
 
 
-    x = tan(radians(60/3))*Half_Flat
-    dvec = vec3 - mathutils.Vector([x,Half_Flat,0.0])
+    x = tan(radians(arc_deg/3)) * FLAT_RADIUS
+    dvec = vec3 - mathutils.Vector([x,FLAT_RADIUS,0.0])
     Lowest_Point = -dvec.length
-    verts.append([x,Half_Flat,-dvec.length])
+    verts.append([x,FLAT_RADIUS,-dvec.length])
     Lowest_Z_Vert = min(Lowest_Z_Vert,-dvec.length)
 
-    x = tan(radians(60/2))*Half_Flat
-    dvec = vec4 - mathutils.Vector([x,Half_Flat,0.0])
+    x = tan(radians(arc_deg/2)) * FLAT_RADIUS
+    dvec = vec4 - mathutils.Vector([x,FLAT_RADIUS,0.0])
     Lowest_Point = -dvec.length
-    verts.append([x,Half_Flat,-dvec.length])
+    verts.append([x,FLAT_RADIUS,-dvec.length])
     Lowest_Z_Vert = min(Lowest_Z_Vert,-dvec.length)
     Row += 1
 
     #down Bits Tri
-    x = tan(radians(0))*Half_Flat
-    verts.append([x,Half_Flat,Lowest_Point])
+    x = tan(radians(0)) * FLAT_RADIUS
+    verts.append([x,FLAT_RADIUS,Lowest_Point])
 
 
-    x = tan(radians(60/6))*Half_Flat
-    verts.append([x,Half_Flat,Lowest_Point])
-    x = tan(radians(60/3))*Half_Flat
-    verts.append([x,Half_Flat,Lowest_Point])
+    x = tan(radians(arc_deg/6)) * FLAT_RADIUS
+    verts.append([x,FLAT_RADIUS,Lowest_Point])
+    x = tan(radians(arc_deg/3)) * FLAT_RADIUS
+    verts.append([x,FLAT_RADIUS,Lowest_Point])
 
-    x = tan(radians(60/2))*Half_Flat
-    verts.append([x,Half_Flat,Lowest_Point])
+    x = tan(radians(arc_deg/2)) * FLAT_RADIUS
+    verts.append([x,FLAT_RADIUS,Lowest_Point])
     Lowest_Z_Vert = min(Lowest_Z_Vert,Lowest_Point)
     Row += 1
 
     #down Bits
 
-    x = tan(radians(0))*Half_Flat
-    verts.append([x,Half_Flat,-Half_Height])
+    x = tan(radians(0)) * FLAT_RADIUS
+    verts.append([x,FLAT_RADIUS,-Half_Height])
 
-    x = tan(radians(60/6))*Half_Flat
-    verts.append([x,Half_Flat,-Half_Height])
+    x = tan(radians(arc_deg/6)) * FLAT_RADIUS
+    verts.append([x,FLAT_RADIUS,-Half_Height])
 
-    x = tan(radians(60/3))*Half_Flat
-    verts.append([x,Half_Flat,-Half_Height])
+    x = tan(radians(arc_deg/3)) * FLAT_RADIUS
+    verts.append([x,FLAT_RADIUS,-Half_Height])
 
-    x = tan(radians(60/2))*Half_Flat
-    verts.append([x,Half_Flat,-Half_Height])
+    x = tan(radians(arc_deg/2)) * FLAT_RADIUS
+    verts.append([x,FLAT_RADIUS,-Half_Height])
     Lowest_Z_Vert = min(Lowest_Z_Vert,-Half_Height)
     Row += 1
 
@@ -1561,7 +1583,7 @@ def add_Hex_Nut(FLAT,HOLE_DIA,HEIGHT):
     verts.extend(Tvert)
     faces.extend(tface)
 
-    S_verts,S_faces = SpinDup(verts,faces,360,6,'z')
+    S_verts,S_faces = SpinDup(verts,faces,360,360/arc_deg,'z')
 
     #return verts,faces,TopBevelRadius
     return S_verts,S_faces,TopBevelRadius
@@ -1929,7 +1951,10 @@ def Nut_Mesh(props, context):
     faces.extend(Copy_Faces(Thread_Faces,Face_Start))
 
     Face_Start = len(verts)
-    Head_Verts,Head_Faces,Lock_Nut_Rad = add_Hex_Nut(props.bf_Hex_Nut_Flat_Distance,props.bf_Major_Dia,New_Nut_Height)
+    if props.bf_Nut_Type != 'bf_Nut_Square':
+        Head_Verts,Head_Faces,Lock_Nut_Rad = add_Hex_Nut(props.bf_Hex_Nut_Flat_Distance,props.bf_Major_Dia,New_Nut_Height)
+    else:
+        Head_Verts,Head_Faces,Lock_Nut_Rad = add_Square_Nut(props.bf_Hex_Nut_Flat_Distance,props.bf_Major_Dia,New_Nut_Height)
     verts.extend((Head_Verts))
     faces.extend(Copy_Faces(Head_Faces,Face_Start))
 
@@ -2006,6 +2031,10 @@ def Bolt_Mesh(props, context):
 
     elif props.bf_Head_Type == 'bf_Head_Pan':
         Head_Verts,Head_Faces,Head_Height = Create_Pan_Head(Bit_Dia,props.bf_Pan_Head_Dia,props.bf_Shank_Dia,props.bf_Hex_Head_Height,1,1,0)
+
+    elif props.bf_Head_Type =='bf_Head_Square':
+        Head_Verts,Head_Faces,Head_Height = Create_Square_Head(props.bf_Hex_Head_Flat_Distance,Bit_Dia,props.bf_Shank_Dia,props.bf_Hex_Head_Height)
+
 
     elif props.bf_Head_Type == 'bf_Head_CounterSink':
         Head_Verts,Head_Faces,Head_Height = Create_CounterSink_Head(Bit_Dia,props.bf_CounterSink_Head_Dia,props.bf_Shank_Dia,props.bf_CounterSink_Head_Dia,props.bf_CounterSink_Head_Dia*(0.09/6.31))
