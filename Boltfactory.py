@@ -341,7 +341,9 @@ class FastenerSettings(PropertyGroup):
     bf_Hex_Nut_Height = FloatProperty( attr='bf_Hex_Nut_Height',
             name='Hex Nut Height', default = 2.4,
             min = 0, soft_min = 0, max = MAX_INPUT_NUMBER,
-            description='Height of the Hex Nut')
+            description='Height of the Hex Nut'
+            ,update=update_settings_cb
+            )
 
     bf_Hex_Nut_Flat_Distance = FloatProperty( attr='bf_Hex_Nut_Flat_Distance',
             name='Hex Nut Flat Dist', default = 5.5,
