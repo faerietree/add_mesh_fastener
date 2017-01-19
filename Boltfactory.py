@@ -150,216 +150,260 @@ class FastenerSettings(PropertyGroup):
     """Parameters of the fastener"""  # Tooltip
 
     update_manually = BoolProperty(
-            name="Update manually"
-            ,description="If enabled apply settings manually instead of realtime update."
-            ,default=False
-            #,update=update_settings_cb
+            default = False
+            ,description = "If enabled apply settings manually instead of realtime update."
+            ,name = "Update manually"
+            #,update = update_settings_cb
     )
 
     # Model Types
-    bf_Model_Type_List = [('bf_Model_Bolt','BOLT',"Bolt Model"),
-                        ('bf_Model_Nut','NUT',"Nut Model")]
-    bf_Model_Type = EnumProperty( attr='bf_Model_Type',
-            name="Model",
-            description="Choose a type of model",
-            items = bf_Model_Type_List, default = 'bf_Model_Bolt'
-            ,update=update_settings_cb
+    bf_Model_Type_List = [
+            ('bf_Model_Bolt','BOLT',"Bolt Model")
+            ,('bf_Model_Nut','NUT',"Nut Model")
+            ]
+    bf_Model_Type = EnumProperty(
+            default = 'bf_Model_Bolt'
+            ,description = "Choose a type of model"
+            ,items = bf_Model_Type_List
+            ,name = "Model"
+            ,update = update_settings_cb
             )
     # Head Types
-    bf_Head_Type_List = [('bf_Head_Hex','HEX','Hex Head'),
-                        ('bf_Head_Cap','CAP','Cap Head'),
-                        ('bf_Head_Dome','DOME','Dome Head'),
-                        ('bf_Head_Pan','PAN','Pan Head'),
-                        ('bf_Head_Square','SQUARE','Square Head'),
-                        ('bf_Head_CounterSink','COUNTER SINK','Counter Sink Head')]
-    bf_Head_Type = EnumProperty( attr='bf_Head_Type',
-            name='Head Type',
-            description='Type of Head',
-            items = bf_Head_Type_List, default = 'bf_Head_Hex'
-            ,update=update_settings_cb
+    bf_Head_Type_List = [
+            ('bf_Head_Hex','HEX','Hex Head')
+            ,('bf_Head_Cap','CAP','Cap Head')
+            ,('bf_Head_Dome','DOME','Dome Head')
+            ,('bf_Head_Pan','PAN','Pan Head')
+            ,('bf_Head_Square','SQUARE','Square Head')
+            ,('bf_Head_CounterSink','COUNTER SINK','Counter Sink Head')
+            ]
+    bf_Head_Type = EnumProperty(
+            default = 'bf_Head_Hex'
+            ,description = 'Type of Head'
+            ,items = bf_Head_Type_List
+            ,name = 'Head Type'
+            ,update = update_settings_cb
             )
 
     # Bit Types
-    Bit_Type_List = [('bf_Bit_None','NONE','No Bit Type'),
-                    ('bf_Bit_Allen','ALLEN','Allen Bit Type'),
-                    ('bf_Bit_Philips','PHILLIPS','Phillips Bit Type')]
-    bf_Bit_Type = EnumProperty( attr='bf_Bit_Type',
-            name='Bit Type',
-            description='Type of bit',
-            items = Bit_Type_List, default = 'bf_Bit_None'
-            ,update=update_settings_cb
+    Bit_Type_List = [
+            ('bf_Bit_None','NONE','No Bit Type')
+            ,('bf_Bit_Allen','ALLEN','Allen Bit Type')
+            ,('bf_Bit_Philips','PHILLIPS','Phillips Bit Type')
+            ]
+    bf_Bit_Type = EnumProperty(
+            default = 'bf_Bit_None'
+            ,description = 'Type of bit'
+            ,items = Bit_Type_List
+            ,name = 'Bit Type'
+            ,update = update_settings_cb
             )
 
     # Nut Types
-    Nut_Type_List = [('bf_Nut_Hex','HEX','Hex Nut'),
-                    ('bf_Nut_Square','SQUARE','Square Nut'),
-                    ('bf_Nut_Lock','LOCK','Lock Nut')]
-    bf_Nut_Type = EnumProperty( attr='bf_Nut_Type',
-            name='Nut Type',
-            description='Type of nut',
-            items = Nut_Type_List, default = 'bf_Nut_Hex'
-            ,update=update_settings_cb
+    Nut_Type_List = [
+            ('bf_Nut_Hex','HEX','Hex Nut')
+            ,('bf_Nut_Square','SQUARE','Square Nut')
+            ,('bf_Nut_Lock','LOCK','Lock Nut')
+            ]
+    bf_Nut_Type = EnumProperty(
+            default = 'bf_Nut_Hex'
+            ,description = 'Type of nut'
+            ,items = Nut_Type_List
+            ,name = 'Nut Type'
+            ,update = update_settings_cb
             )
 
     # Shank Types
-    bf_Shank_Length = FloatProperty(
-            name='Shank Length', default = 0,
-            min = 0, soft_min = 0, max = MAX_INPUT_NUMBER,
-            description='Length of the unthreaded shank'
-            ,update=update_settings_cb
+    #TODO Support reduced shanks in createMesh, then add type select to GUI.
+    Shank_Type_List = [
+            ('bf_Shank_Full', 'FULL', 'Full')
+            ,('bf_Shank_Reduced', 'REDUCED', 'Reduced')
+            ,('bf_Shank_Reduced_Conically', 'REDUCED_CONICALLY', 'Conically reduced')
+            ]
+    bf_Shank_Type = EnumProperty(
+            default = 'bf_Shank_Full'
+            ,description = 'Type of shank'
+            ,items = Shank_Type_List
+            ,name = 'Shank Type'
+            ,update = update_settings_cb
             )
 
-    bf_Shank_Dia = FloatProperty(attr='bf_Shank_Dia',
-            name='Shank Dia', default = 3,
-            min = 0, soft_min = 0,max = MAX_INPUT_NUMBER,
-            description='Diameter of the shank'
-            ,update=update_settings_cb
-            )
 
-    bf_Phillips_Bit_Depth = FloatProperty(attr='bf_Phillips_Bit_Depth',
-            name='Bit Depth', default = 0, #set in execute
-            options = {'HIDDEN'}, #gets calculated in execute
-            min = 0, soft_min = 0,max = MAX_INPUT_NUMBER,
-            description='Depth of the Phillips Bit'
-            ,update=update_settings_cb
+    # Parameters:
+    # Head
+    bf_Hex_Head_Height = FloatProperty(
+            default = 2
+            ,description = 'Height of the Hex Head'
+            ,name = 'Head Height'
+            ,min = 0, soft_min = 0, max = MAX_INPUT_NUMBER
+            ,update = update_settings_cb
             )
-
-    bf_Allen_Bit_Depth = FloatProperty(attr='bf_Allen_Bit_Depth',
-            name='Bit Depth', default = 1.5,
-            min = 0, soft_min = 0,max = MAX_INPUT_NUMBER,
-            description='Depth of the Allen Bit'
-            ,update=update_settings_cb
+    bf_Hex_Head_Flat_Distance = FloatProperty(
+            default = 5.5
+            ,description = 'Flat Distance of the Hex Head'
+            ,min = 0, soft_min = 0, max = MAX_INPUT_NUMBER
+            ,name = 'Flat Dist'
+            ,update = update_settings_cb
             )
-
-    bf_Allen_Bit_Flat_Distance = FloatProperty( attr='bf_Allen_Bit_Flat_Distance',
-            name='Flat Dist', default = 2.5,
-            min = 0, soft_min = 0, max = MAX_INPUT_NUMBER,
-            description='Flat Distance of the Allen Bit'
-            ,update=update_settings_cb
-            )
-
-    bf_Hex_Head_Height = FloatProperty( attr='bf_Hex_Head_Height',
-            name='Head Height', default = 2,
-            min = 0, soft_min = 0, max = MAX_INPUT_NUMBER,
-            description='Height of the Hex Head'
-            ,update=update_settings_cb
-            )
-
-    bf_Hex_Head_Flat_Distance = FloatProperty( attr='bf_Hex_Head_Flat_Distance',
-            name='Flat Dist', default = 5.5,
-            min = 0, soft_min = 0, max = MAX_INPUT_NUMBER,
-            description='Flat Distance of the Hex Head'
-            ,update=update_settings_cb
-            )
-
     bf_CounterSink_Head_Dia = FloatProperty(
-            name='Head Dia', default = 5.5,
-            min = 0, soft_min = 0, max = MAX_INPUT_NUMBER,
-            description='Diameter of the Counter Sink Head'
-            ,update=update_settings_cb
+            default = 5.5
+            ,description = 'Diameter of the Counter Sink Head'
+            ,min = 0, soft_min = 0, max = MAX_INPUT_NUMBER
+            ,name = 'Head Dia'
+            ,update = update_settings_cb
+            )
+    bf_Cap_Head_Height = FloatProperty(
+            default = 5.5
+            ,description = 'Height of the Cap Head'
+            ,min = 0, soft_min = 0, max = MAX_INPUT_NUMBER
+            ,name = 'Head Height'
+            ,update = update_settings_cb
+            )
+    bf_Cap_Head_Dia = FloatProperty(
+            default = 3
+            ,description = 'Diameter of the Cap Head'
+            ,min = 0, soft_min = 0, max = MAX_INPUT_NUMBER
+            ,name = 'Head Dia'
+            ,update = update_settings_cb
+            )
+    bf_Dome_Head_Dia = FloatProperty(
+            default = 5.6
+            ,description = 'Diameter of the Dome Head'
+            ,min = 0, soft_min = 0, max = MAX_INPUT_NUMBER
+            ,name = 'Dome Head Dia'
+            ,update = update_settings_cb
+            )
+    bf_Pan_Head_Dia = FloatProperty(
+            default = 5.6
+            ,description = 'Diameter of the Pan Head'
+            ,min = 0,soft_min = 0, max = MAX_INPUT_NUMBER
+            ,name = 'Pan Head Dia'
+            ,update = update_settings_cb
             )
 
-    bf_Cap_Head_Height = FloatProperty( attr='bf_Cap_Head_Height',
-            name='Head Height', default = 5.5,
-            min = 0, soft_min = 0, max = MAX_INPUT_NUMBER,
-            description='Height of the Cap Head'
-            ,update=update_settings_cb
+    # Bit
+    bf_Phillips_Bit_Depth = FloatProperty(
+            default = 0 #set in execute
+            ,description = 'Depth of the Phillips Bit'
+            ,min = 0, soft_min = 0,max = MAX_INPUT_NUMBER
+            ,name = 'Bit Depth'
+            ,options = {'HIDDEN'} #gets calculated in execute
+            ,update = update_settings_cb
+            )
+    bf_Allen_Bit_Depth = FloatProperty(
+            default = 1.5
+            ,description = 'Depth of the Allen Bit'
+            ,min = 0, soft_min = 0,max = MAX_INPUT_NUMBER
+            ,name = 'Bit Depth'#
+            ,update = update_settings_cb
             )
 
-    bf_Cap_Head_Dia = FloatProperty( attr='bf_Cap_Head_Dia',
-            name='Head Dia', default = 3,
-            min = 0, soft_min = 0, max = MAX_INPUT_NUMBER,
-            description='Diameter of the Cap Head'
-            ,update=update_settings_cb
+    bf_Allen_Bit_Flat_Distance = FloatProperty(
+            default = 2.5
+            ,description = 'Flat Distance of the Allen Bit'
+            ,min = 0, soft_min = 0, max = MAX_INPUT_NUMBER
+            ,name = 'Flat Dist'
+            ,update = update_settings_cb
             )
 
-    bf_Dome_Head_Dia = FloatProperty( attr='bf_Dome_Head_Dia',
-            name='Dome Head Dia', default = 5.6,
-            min = 0, soft_min = 0, max = MAX_INPUT_NUMBER,
-            description='Diameter of the Dome Head'
-            ,update=update_settings_cb
+    bf_Philips_Bit_Dia = FloatProperty(
+            default = 0 #set in execute
+            ,description = 'Diameter of the Philips Bit'
+            ,min = 0, soft_min = 0,max = MAX_INPUT_NUMBER
+            ,name = 'Bit Dia'
+            ,options = {'HIDDEN'} #gets calculated in execute
+            ,update = update_settings_cb
             )
 
-    bf_Pan_Head_Dia = FloatProperty( attr='bf_Pan_Head_Dia',
-            name='Pan Head Dia', default = 5.6,
-            min = 0, soft_min = 0, max = MAX_INPUT_NUMBER,
-            description='Diameter of the Pan Head'
-            ,update=update_settings_cb
+    # Shank
+    bf_Shank_Length = FloatProperty(
+            default = 0
+            ,description = 'Length of the unthreaded shank'
+            ,min = 0, soft_min = 0, max = MAX_INPUT_NUMBER
+            ,name = 'Shank Length'
+            ,update = update_settings_cb
+            )
+    bf_Shank_Dia = FloatProperty(
+            default = 3
+            ,description = 'Diameter of the shank'
+            ,min = 0, soft_min = 0, max = MAX_INPUT_NUMBER
+            ,name = 'Shank Dia'
+            ,update = update_settings_cb
+            )
+    bf_Thread_Length = FloatProperty(
+            default = 6
+            ,description = 'Length of the Thread'
+            ,min = 0, soft_min = 0, max = MAX_INPUT_NUMBER
+            ,name = 'Thread Length'
+            ,update = update_settings_cb
             )
 
-    bf_Philips_Bit_Dia = FloatProperty(attr='bf_Philips_Bit_Dia',
-            name='Bit Dia', default = 0, #set in execute
-            options = {'HIDDEN'}, #gets calculated in execute
-            min = 0, soft_min = 0,max = MAX_INPUT_NUMBER,
-            description='Diameter of the Philips Bit'
-            ,update=update_settings_cb
+    # Thread
+    bf_Major_Dia = FloatProperty(
+            default = 3
+            ,description = 'Outside diameter of the Thread'
+            ,min = 0, soft_min = 0, max = MAX_INPUT_NUMBER
+            ,name = 'Major Dia'
+            ,update = update_settings_cb
             )
 
-    bf_Thread_Length = FloatProperty( attr='bf_Thread_Length',
-            name='Thread Length', default = 6,
-            min = 0, soft_min = 0, max = MAX_INPUT_NUMBER,
-            description='Length of the Thread'
-            ,update=update_settings_cb
+    bf_Pitch = FloatProperty(
+            default = 0.35
+            ,description = 'Pitch of the thread'
+            ,min = 0.1, soft_min = 0.1, max = 30.0
+            ,name = 'Pitch'
+            ,update = update_settings_cb
             )
 
-    bf_Major_Dia = FloatProperty( attr='bf_Major_Dia',
-            name='Major Dia', default = 3,
-            min = 0, soft_min = 0, max = MAX_INPUT_NUMBER,
-            description='Outside diameter of the Thread'
-            ,update=update_settings_cb
+    bf_Minor_Dia = FloatProperty(
+            default = 0 #set in execute
+            ,description = 'Inside diameter of the Thread'
+            ,min = 0, soft_min = 0, max = MAX_INPUT_NUMBER
+            ,name = 'Minor Dia'
+            ,options = {'HIDDEN'} #gets calculated in execute
+            ,update = update_settings_cb
             )
 
-    bf_Pitch = FloatProperty( attr='bf_Pitch',
-            name='Pitch', default = 0.35,
-            min = 0.1, soft_min = 0.1, max = 30.0,
-            description='Pitch of the thread'
-            ,update=update_settings_cb
+    bf_Crest_Percent = IntProperty(
+            default = 10
+            ,description = 'Percent of the pitch that makes up the Crest'
+            ,min = 1, soft_min = 1, max = 90
+            ,name = 'Crest Percent'
+            ,update = update_settings_cb
             )
 
-    bf_Minor_Dia = FloatProperty( attr='bf_Minor_Dia',
-            name='Minor Dia', default = 0, #set in execute
-            options = {'HIDDEN'}, #gets calculated in execute
-            min = 0, soft_min = 0, max = MAX_INPUT_NUMBER,
-            description='Inside diameter of the Thread'
-            ,update=update_settings_cb
+    bf_Root_Percent = IntProperty(
+            default = 10
+            ,description = 'Percent of the pitch that makes up the Root'
+            ,min = 1, soft_min = 1, max = 90
+            ,name = 'Root Percent'
+            ,update = update_settings_cb
             )
 
-    bf_Crest_Percent = IntProperty( attr='bf_Crest_Percent',
-            name='Crest Percent', default = 10,
-            min = 1, soft_min = 1, max = 90,
-            description='Percent of the pitch that makes up the Crest'
-            ,update=update_settings_cb
+    bf_Hex_Nut_Height = FloatProperty(
+            default = 2.4
+            ,description = 'Height of the Hex Nut'
+            ,min = 0, soft_min = 0, max = MAX_INPUT_NUMBER
+            ,name = 'Hex Nut Height'
+            ,update = update_settings_cb
             )
 
-    bf_Root_Percent = IntProperty( attr='bf_Root_Percent',
-            name='Root Percent', default = 10,
-            min = 1, soft_min = 1, max = 90,
-            description='Percent of the pitch that makes up the Root'
-            ,update=update_settings_cb
-            )
-
-    bf_Hex_Nut_Height = FloatProperty( attr='bf_Hex_Nut_Height',
-            name='Hex Nut Height', default = 2.4,
-            min = 0, soft_min = 0, max = MAX_INPUT_NUMBER,
-            description='Height of the Hex Nut'
-            ,update=update_settings_cb
-            )
-
-    bf_Hex_Nut_Flat_Distance = FloatProperty( attr='bf_Hex_Nut_Flat_Distance',
-            name='Hex Nut Flat Dist', default = 5.5,
-            min = 0, soft_min = 0, max = MAX_INPUT_NUMBER,
-            description='Flat distance of the Hex Nut'
-            ,update=update_settings_cb
+    bf_Hex_Nut_Flat_Distance = FloatProperty(
+            default = 5.5
+            ,description = 'Flat distance of the Hex Nut'
+            ,min = 0, soft_min = 0, max = MAX_INPUT_NUMBER
+            ,name = 'Hex Nut Flat Dist'
+            ,update = update_settings_cb
             )
 
     presets, presetsPath = getPresets()
 
-    bf_preset = EnumProperty(attr='bf_preset',
-            name='Preset',
-            description="Use Preset from File",
-            default='M3.py',
-            items=presets
-            ,update=load_settings_from_preset_cb
+    bf_preset = EnumProperty(
+            default = 'M3.py'
+            ,description = "Use Preset from File"
+            ,items = presets
+            ,name = 'Preset'
+            ,update = load_settings_from_preset_cb
             )
 
     last_preset = None
