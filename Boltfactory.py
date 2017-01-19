@@ -49,6 +49,19 @@ def align_matrix(context):
     return align_matrix
 
 
+def iso888_calculate_thread_length(nominal_diameter, length):
+    if nominal_diameter <= 125:
+        thread_length = 2 * nominal_diameter + 6
+    elif nominal_diameter <= 200:
+        thread_length = 2 * nominal_diameter + 12
+    else:
+        thread_length = 2 * nominal_diameter + 25
+    # Shank length too small? (also follows iso 888):
+    if length - thread_length <= nominal_diameter / 2:
+        return length  # fully threaded
+    return thread_length
+
+
 def load_settings_from_preset_cb(self, context):
     # prevent recursive call
     if load_settings_from_preset_cb.level == False:
@@ -57,14 +70,35 @@ def load_settings_from_preset_cb(self, context):
         print("load_settings_from_preset_cb: ", self)
 
         if settings.bf_preset != 'custom.py' and (not settings.last_preset or settings.bf_preset != settings.last_preset):
+            # If it is not custom,then standards ISO225,888 are respected.
             #print("setting preset: ", settings.bf_preset)
             #print("presetsPath: ", settings.presetsPath)
             update_manually_previous = settings.update_manually
             settings.update_manually = True
+
+            settings.bf_Length = 0.0
+            settings.bf_Thread_Length = 0.0
+            settings.bf_Shank_Length = 0.0
             setProps(settings, settings.bf_preset, settings.presetsPath)
-            # derive some properties:
+
+            # Derive some properties:
+            # Support specifying thread, shank lengths instead of overall length:
+            if not settings.bf_Length:
+                # Derive bf_Length
+                if not settings.bf_Thread_Length or not settings.bf_Shank_Length:
+                    print("Error: Neither thread, shank lengths nor the sum of both (bf_Length) specified in preset '%s'." % (settings.bf_preset))
+                    return {'CANCELLED'}
+                # Thread, shank lengths are given
+                print("Thread, shank lengths are given in preset '%s'." % (settings.bf_preset))
+                settings.bf_Length = settings.bf_Thread_Length + settings.bf_Shank_Length
+            else:
+                # Derive thread, shank lengths
+                # ISO 888: Dimensions for thread lengths calculation:
+                settings.bf_Thread_Length = iso888_calculate_thread_length(settings.bf_Major_Dia, settings.bf_Length)
+                settings.bf_Shank_Length = settings.bf_Length - settings.bf_Thread_Length
+
+            # Derive more properties:
             settings.bf_Phillips_Bit_Depth = float(Get_Phillips_Bit_Height(settings.bf_Philips_Bit_Dia))
-            #settings.bf_Phillips_Bit_Depth = float(Get_Phillips_Bit_Height(settings.bf_Philips_Bit_Dia))
             #settings.bf_Philips_Bit_Dia = settings.bf_Pan_Head_Dia*(1.82/5.6)
             #settings.bf_Minor_Dia = settings.bf_Major_Dia - (1.082532 * settings.bf_Pitch)
 
@@ -297,7 +331,6 @@ class FastenerSettings(PropertyGroup):
             ,name = 'Bit Depth'#
             ,update = update_settings_cb
             )
-
     bf_Allen_Bit_Flat_Distance = FloatProperty(
             default = 2.5
             ,description = 'Flat Distance of the Allen Bit'
@@ -305,7 +338,6 @@ class FastenerSettings(PropertyGroup):
             ,name = 'Flat Dist'
             ,update = update_settings_cb
             )
-
     bf_Philips_Bit_Dia = FloatProperty(
             default = 0 #set in execute
             ,description = 'Diameter of the Philips Bit'
@@ -316,6 +348,13 @@ class FastenerSettings(PropertyGroup):
             )
 
     # Shank
+    bf_Length = FloatProperty(
+            default = 0
+            ,description = 'Shank length + Thread length'
+            ,min = 0, soft_min = 0, max = MAX_INPUT_NUMBER
+            ,name = 'Length l'
+            ,update = update_settings_cb
+            )
     bf_Shank_Length = FloatProperty(
             default = 0
             ,description = 'Length of the unthreaded shank'
@@ -346,7 +385,6 @@ class FastenerSettings(PropertyGroup):
             ,name = 'Major Dia'
             ,update = update_settings_cb
             )
-
     bf_Pitch = FloatProperty(
             default = 0.35
             ,description = 'Pitch of the thread'
@@ -354,7 +392,6 @@ class FastenerSettings(PropertyGroup):
             ,name = 'Pitch'
             ,update = update_settings_cb
             )
-
     bf_Minor_Dia = FloatProperty(
             default = 0 #set in execute
             ,description = 'Inside diameter of the Thread'
@@ -363,7 +400,6 @@ class FastenerSettings(PropertyGroup):
             ,options = {'HIDDEN'} #gets calculated in execute
             ,update = update_settings_cb
             )
-
     bf_Crest_Percent = IntProperty(
             default = 10
             ,description = 'Percent of the pitch that makes up the Crest'
@@ -371,7 +407,6 @@ class FastenerSettings(PropertyGroup):
             ,name = 'Crest Percent'
             ,update = update_settings_cb
             )
-
     bf_Root_Percent = IntProperty(
             default = 10
             ,description = 'Percent of the pitch that makes up the Root'
@@ -380,6 +415,7 @@ class FastenerSettings(PropertyGroup):
             ,update = update_settings_cb
             )
 
+    # Nut
     bf_Hex_Nut_Height = FloatProperty(
             default = 2.4
             ,description = 'Height of the Hex Nut'
@@ -387,7 +423,6 @@ class FastenerSettings(PropertyGroup):
             ,name = 'Hex Nut Height'
             ,update = update_settings_cb
             )
-
     bf_Hex_Nut_Flat_Distance = FloatProperty(
             default = 5.5
             ,description = 'Flat distance of the Hex Nut'
@@ -396,6 +431,7 @@ class FastenerSettings(PropertyGroup):
             ,update = update_settings_cb
             )
 
+    # preset
     presets, presetsPath = getPresets()
 
     bf_preset = EnumProperty(
@@ -417,6 +453,10 @@ class OBJECT_PT_Fastener(Panel):
     bl_context = 'object'
 
     def draw(self, context):
+        global shank_length_row
+        global thread_length_row
+        global length_row
+
         layout = self.layout
         col = layout.column()
         scene = context.scene
@@ -458,26 +498,36 @@ class OBJECT_PT_Fastener(Panel):
             elif settings.bf_Head_Type == 'bf_Head_CounterSink':
                 col.prop(settings, 'bf_CounterSink_Head_Dia')
             col.separator()
-        #Shank
-        if settings.bf_Model_Type == 'bf_Model_Bolt':
-            col.label(text='Shank')
-            col.prop(settings, 'bf_Shank_Length')
-            col.prop(settings, 'bf_Shank_Dia')
-            col.separator()
         #Nut
         if settings.bf_Model_Type == 'bf_Model_Nut':
             col.prop(settings, 'bf_Nut_Type')
             col.prop(settings, 'bf_Hex_Nut_Height')
             col.prop(settings, 'bf_Hex_Nut_Flat_Distance')
+            col.separator()
         #Thread
         col.label(text='Thread')
-        if settings.bf_Model_Type == 'bf_Model_Bolt':
-            col.prop(settings, 'bf_Thread_Length')
         col.prop(settings, 'bf_Major_Dia')
         col.prop(settings, 'bf_Minor_Dia')
         col.prop(settings, 'bf_Pitch')
         col.prop(settings, 'bf_Crest_Percent')
         col.prop(settings, 'bf_Root_Percent')
+        if settings.bf_Model_Type == 'bf_Model_Bolt':
+            thread_length_row = col.row()
+            thread_length_row.prop(settings, 'bf_Thread_Length')
+            thread_length_row.active = True
+            col.separator()
+            #Shank
+            col.label(text='Shank')
+            col.prop(settings, 'bf_Shank_Dia')
+            shank_length_row = col.row()
+            shank_length_row.prop(settings, 'bf_Shank_Length')
+            shank_length_row.active = True
+            if settings.bf_preset != 'custom.py':
+                length_row = col.row()
+                length_row.prop(settings, 'bf_Length')
+                length_row.active = True
+                shank_length_row.active = False
+                thread_length_row.active = False
 
         col.separator()
         col.prop(settings, "update_manually")
