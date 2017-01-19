@@ -276,7 +276,7 @@ class FastenerSettings(PropertyGroup):
     bf_Dome_Head_Dia = FloatProperty( attr='bf_Dome_Head_Dia',
             name='Dome Head Dia', default = 5.6,
             min = 0, soft_min = 0, max = MAX_INPUT_NUMBER,
-            description='Length of the unthreaded shank'
+            description='Diameter of the Dome Head'
             ,update=update_settings_cb
             )
 
