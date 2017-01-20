@@ -24,7 +24,7 @@ def getPresets():
     scriptPath = os.path.dirname(__file__)
     presetPath = os.path.join(scriptPath, "presets")
     presetFiles = os.listdir(presetPath)
-    #presetFiles.sort()
+    presetFiles.sort()
     presetFiles.append("custom.py")
 
     presets = [
