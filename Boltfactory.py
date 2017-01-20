@@ -437,7 +437,7 @@ class FastenerSettings(PropertyGroup):
     presets, presetsPath = getPresets()
 
     bf_preset = EnumProperty(
-            default = 'M3.py'
+            default = 'M06.py'
             ,description = "Use Preset from File"
             ,items = presets
             ,name = 'Preset'
