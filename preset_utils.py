@@ -27,26 +27,18 @@ def getPresets():
     #presetFiles.sort()
     presetFiles.append("custom.py")
 
-    presets = [(presetFile, presetFile.rpartition(".")[0], presetFile)
-                for i, presetFile in enumerate(presetFiles) if presetFile.endswith(".py")]
-
+    presets = [
+            (presetFile, presetFile.rpartition(".")[0], presetFile)
+                for i, presetFile in enumerate(presetFiles) if presetFile.endswith(".py")
+            ]
     #print(presets)
     return presets, presetPath
-
-
 #presets = getPresets()
 
 
-
 def setProps(props, preset, presetsPath):
-
     #bpy.ops.script.python_file_run(filepath=presetsPath + '\\' + preset)
+    with open(os.path.join(presetsPath, preset), 'r') as f:
+       for line in f:
+           exec(line)
 
-    file = open(os.path.join(presetsPath, preset))
-
-    for line in file:
-        exec(line)
-
-    file.close()
-
-    return
