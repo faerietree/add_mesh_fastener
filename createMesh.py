@@ -1057,6 +1057,7 @@ def Create_Shank_Verts(START_DIA,OUTTER_DIA,LENGTH,Z_LOCATION = 0):
         Taper_Lentgh = 0
 
     Stright_Length = LENGTH - Taper_Lentgh
+    #print('taper_length: %s length: %s ' % (str(Taper_Lentgh), str(LENGTH)))
 
     Deg_Step = 360.0 /float(DIV)
 
@@ -1109,6 +1110,7 @@ def Create_Thread_Start_Verts(INNER_DIA,OUTTER_DIA,PITCH,CREST_PERCENT,ROOT_PERC
     Height_Offset = Z_LOCATION
 
     Height_Start = Height_Offset
+    #print('Create_Thread_Start_Verts: height_start: ' + str(Height_Start))
 
     Crest_Height = float(PITCH) * float(CREST_PERCENT)/float(100)
     Root_Height = float(PITCH) * float(ROOT_PERCENT)/float(100)
@@ -1236,7 +1238,7 @@ def Create_Thread_Verts(INNER_DIA,OUTTER_DIA,PITCH,HEIGHT,CREST_PERCENT,ROOT_PER
     Deg_Step = 360.0 /float(DIV)
     Height_Step = float(PITCH)/float(DIV)
 
-    NUM_OF_START_THREADS = 4.0
+    NUM_OF_START_THREADS = 3.0
     NUM_OF_END_THREADS = 3.0
     Num = int((HEIGHT- ((NUM_OF_START_THREADS*PITCH) + (NUM_OF_END_THREADS*PITCH) ))/PITCH)
     Row = 0
@@ -1315,7 +1317,7 @@ def Create_Thread_End_Verts(INNER_DIA,OUTTER_DIA,PITCH,CREST_PERCENT,ROOT_PERCEN
 
     Height_Offset = Z_LOCATION
 
-    Tapper_Height_Start = Height_Offset - PITCH - PITCH
+    Tapper_Height_Start = Height_Offset - 3 * PITCH
 
     Max_Height = Tapper_Height_Start - PITCH
 
@@ -1405,14 +1407,16 @@ def Create_External_Thread(SHANK_DIA,SHANK_LENGTH,INNER_DIA,OUTTER_DIA,PITCH,LEN
 
     Thread_Start_Verts,Thread_Start_Row,Offset = Create_Thread_Start_Verts(INNER_DIA,OUTTER_DIA,PITCH,CREST_PERCENT,ROOT_PERCENT,Offset)
     Total_Row += Thread_Start_Row
-
+    #print('offset after thread start verts: ' + str(Offset))
 
     Thread_Verts,Thread_Row,Offset = Create_Thread_Verts(INNER_DIA,OUTTER_DIA,PITCH,LENGTH,CREST_PERCENT,ROOT_PERCENT,Offset)
     Total_Row += Thread_Row
+    #print('offset after thread verts: ' + str(Offset))
 
 
     Thread_End_Verts,Thread_End_Row,Offset,Lowest_Z_Vert = Create_Thread_End_Verts(INNER_DIA,OUTTER_DIA,PITCH,CREST_PERCENT,ROOT_PERCENT,Offset )
     Total_Row += Thread_End_Row
+    #print('offset after end verts: ' + str(Offset))
 
 
     verts.extend(Shank_Verts)
@@ -1787,6 +1791,7 @@ def Create_Internal_Thread_End_Verts(verts,INNER_RADIUS,OUTTER_RADIUS,PITCH,DIV,
     # Half_Pitch = float(PITCH)/2  # UNUSED
     #Height_End = Height_Offset - PITCH - PITCH - PITCH- PITCH - PITCH- PITCH
     Height_End = Height_Offset - PITCH
+    #print('Create_Internal_Thread_End_Verts: Height_End: ' + str(Height_End))
     #Height_End = -2.1
     Height_Step = float(PITCH)/float(DIV)
     Deg_Step = 360.0 /float(DIV)
