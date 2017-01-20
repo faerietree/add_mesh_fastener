@@ -87,7 +87,7 @@ def load_settings_from_preset_cb(self, context):
                 # Derive bf_Length
                 if not settings.bf_Thread_Length or not settings.bf_Shank_Length:
                     print("Error: Neither thread, shank lengths nor the sum of both (bf_Length) specified in preset '%s'." % (settings.bf_preset))
-                    return {'CANCELLED'}
+                    return None
                 # Thread, shank lengths are given
                 print("Thread, shank lengths are given in preset '%s'." % (settings.bf_preset))
                 settings.bf_Length = settings.bf_Thread_Length + settings.bf_Shank_Length
