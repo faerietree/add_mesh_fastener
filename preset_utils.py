@@ -28,7 +28,7 @@ def getPresets():
     presetFiles.append("custom.py")
 
     presets = [
-            (presetFile, presetFile.rpartition(".")[0], presetFile)
+            (presetFile, presetFile.rpartition(".")[0].replace('M0', 'M'), presetFile)
                 for i, presetFile in enumerate(presetFiles) if presetFile.endswith(".py")
             ]
     #print(presets)
