@@ -97,7 +97,7 @@ def load_settings_from_preset_cb(self, context):
                     settings.bf_Length = settings.bf_Thread_Length + settings.bf_Shank_Length
                 else:
                     print("Error: Neither thread, shank lengths nor the sum of both (bf_Length) specified in preset '%s'." % (settings.bf_preset))
-                    return None
+                    # Log but prevent enabling manual update return None
 
             # Derive more properties:
             settings.bf_Phillips_Bit_Depth = float(Get_Phillips_Bit_Height(settings.bf_Philips_Bit_Dia))
