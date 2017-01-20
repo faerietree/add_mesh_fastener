@@ -82,22 +82,8 @@ def load_settings_from_preset_cb(self, context):
             setProps(settings, settings.bf_preset, settings.presetsPath)
 
             # Derive some properties:
-            print('Length:' + str(settings.bf_Length))
-            if settings.bf_Length != 0:
-                # Derive thread, shank lengths
-                # ISO 888: Dimensions for thread lengths calculation:
-                settings.bf_Thread_Length = iso888_calculate_thread_length(settings.bf_Major_Dia, settings.bf_Length)
-                settings.bf_Shank_Length = settings.bf_Length - settings.bf_Thread_Length
-            # Support specifying thread, shank lengths instead of overall length:
-            else:
-                # Derive bf_Length
-                if settings.bf_Thread_Length != 0 or settings.bf_Shank_Length != 0:
-                    # Thread, shank lengths are given
-                    print("Thread, shank lengths are given in preset '%s'." % (settings.bf_preset))
-                    settings.bf_Length = settings.bf_Thread_Length + settings.bf_Shank_Length
-                else:
-                    print("Error: Neither thread, shank lengths nor the sum of both (bf_Length) specified in preset '%s'." % (settings.bf_preset))
-                    # Log but prevent enabling manual update return None
+            print('Preset Length: ' + str(settings.bf_Length))
+            update_lengths(settings, context, force=True)
 
             # Derive more properties:
             settings.bf_Phillips_Bit_Depth = float(Get_Phillips_Bit_Height(settings.bf_Philips_Bit_Dia))
@@ -179,6 +165,54 @@ def update_settings_cb(self, context):
 
 update_settings_cb.level = False
 
+
+#
+# Two distinct functions because blender Property callbacks require
+# exactly two arguments.
+#
+def update_lengths_cb(self, context):
+    update_lengths(self, context)
+
+
+def update_lengths(self, context, force=False):
+    print('update_lengths')
+    # prevent recursive call:settings
+    if update_lengths.level == False:
+        if not force and not are_settings_out_of_sync(self, context):
+            print("Settings not out of sync. Doing nothing.")
+            return
+        print('update_lengths heavy lifting')
+        update_lengths.level = True
+
+        settings = self
+        update_manually_previous = settings.update_manually
+        settings.update_manually = True
+
+        print('Length:' + str(settings.bf_Length))
+        if settings.bf_Length != 0:
+            # Derive thread, shank lengths
+            # ISO 888: Dimensions for thread lengths calculation:
+            settings.bf_Thread_Length = iso888_calculate_thread_length(settings.bf_Major_Dia, settings.bf_Length)
+            settings.bf_Shank_Length = settings.bf_Length - settings.bf_Thread_Length
+        # Support specifying thread, shank lengths instead of overall length:
+        else:
+            # Derive bf_Length
+            if settings.bf_Thread_Length != 0 or settings.bf_Shank_Length != 0:
+                # Thread, shank lengths are given
+                print("Thread, shank lengths are given in preset '%s'." % (settings.bf_preset))
+                settings.bf_Length = settings.bf_Thread_Length + settings.bf_Shank_Length
+            else:
+                print("Error: Neither thread, shank lengths nor the sum of both (bf_Length) specified in preset '%s'." % (settings.bf_preset))
+                # Log but prevent enabling manual update return None
+
+        settings.update_manually = update_manually_previous
+        # React on changed thread | shank lengths:
+        if not settings.update_manually:
+            bpy.ops.mesh.fastener_update()
+
+    update_lengths.level = False
+
+update_lengths.level = False
 
 
 MAX_INPUT_NUMBER = 500
@@ -355,7 +389,7 @@ class FastenerSettings(PropertyGroup):
             ,description = 'Shank length + Thread length'
             ,min = 0, soft_min = 0, max = MAX_INPUT_NUMBER
             ,name = 'Length l'
-            ,update = update_settings_cb
+            ,update = update_lengths_cb
             )
     bf_Shank_Length = FloatProperty(
             default = 0
