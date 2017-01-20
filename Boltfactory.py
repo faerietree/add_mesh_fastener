@@ -82,20 +82,22 @@ def load_settings_from_preset_cb(self, context):
             setProps(settings, settings.bf_preset, settings.presetsPath)
 
             # Derive some properties:
-            # Support specifying thread, shank lengths instead of overall length:
-            if not settings.bf_Length:
-                # Derive bf_Length
-                if not settings.bf_Thread_Length or not settings.bf_Shank_Length:
-                    print("Error: Neither thread, shank lengths nor the sum of both (bf_Length) specified in preset '%s'." % (settings.bf_preset))
-                    return None
-                # Thread, shank lengths are given
-                print("Thread, shank lengths are given in preset '%s'." % (settings.bf_preset))
-                settings.bf_Length = settings.bf_Thread_Length + settings.bf_Shank_Length
-            else:
+            print('Length:' + str(settings.bf_Length))
+            if settings.bf_Length != 0:
                 # Derive thread, shank lengths
                 # ISO 888: Dimensions for thread lengths calculation:
                 settings.bf_Thread_Length = iso888_calculate_thread_length(settings.bf_Major_Dia, settings.bf_Length)
                 settings.bf_Shank_Length = settings.bf_Length - settings.bf_Thread_Length
+            # Support specifying thread, shank lengths instead of overall length:
+            else:
+                # Derive bf_Length
+                if settings.bf_Thread_Length != 0 or settings.bf_Shank_Length != 0:
+                    # Thread, shank lengths are given
+                    print("Thread, shank lengths are given in preset '%s'." % (settings.bf_preset))
+                    settings.bf_Length = settings.bf_Thread_Length + settings.bf_Shank_Length
+                else:
+                    print("Error: Neither thread, shank lengths nor the sum of both (bf_Length) specified in preset '%s'." % (settings.bf_preset))
+                    return None
 
             # Derive more properties:
             settings.bf_Phillips_Bit_Depth = float(Get_Phillips_Bit_Height(settings.bf_Philips_Bit_Dia))
