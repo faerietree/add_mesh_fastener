@@ -27,5 +27,5 @@ Enjoy. Especially handy for developers because all updates in the symbolically l
 
 Differences FastenerFactory, BoltFactory
 ---
-<img src="https://blenderartists.org/forum/attachment.php?attachmentid=468928&d=1485150924" alt=""/>
+<img src="present/differences_fastener_bolt_factory.png" alt="differences fork versus initial version"/>
 
