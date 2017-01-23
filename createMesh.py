@@ -25,7 +25,6 @@ from itertools import *
 
 NARROW_UI = 180
 
-GLOBAL_SCALE = 1.0    # 1 blender unit = X mm
 
 
 
@@ -2150,7 +2149,7 @@ def Create_New_Mesh(props, context):
 
     verts, faces = RemoveDoubles(verts, faces)
 
-    verts = Scale_Mesh_Verts(verts, GLOBAL_SCALE)
+    verts = Scale_Mesh_Verts(verts, props.bf_scale_factor)
 
     create_geometry(context, verts, [], faces, sObjName)
 

@@ -34,6 +34,7 @@ from .preset_utils import *
 
 
 
+
 ##------------------------------------------------------------
 # calculates the matrix for the new object
 # depending on user pref
@@ -225,6 +226,14 @@ class FastenerSettings(PropertyGroup):
             ,name = "Update manually"
             #,update = update_settings_cb
     )
+
+    bf_scale_factor = FloatProperty(
+            default = .001
+            ,description = '<scale_factor> blender unit =: 1 mm'
+            ,min = 0, soft_min = 0, max = MAX_INPUT_NUMBER
+            ,name = 'Scale factor'
+            ,update = update_settings_cb
+            )
 
     # Model Types
     bf_Model_Type_List = [
@@ -499,6 +508,8 @@ class OBJECT_PT_Fastener(Panel):
         obj = context.active_object
         settings = obj.fastener_settings
 
+        # <scale_factor> blender unit =: 1 mm
+        col.prop(settings, "bf_scale_factor")
 
         #ENUMS
         col.prop(settings, 'bf_Model_Type')
