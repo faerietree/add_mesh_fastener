@@ -24,3 +24,8 @@ Download gather and link utility by world developers:
 
 Enjoy. Especially handy for developers because all updates in the symbolically linked folders are reflected instantly. If a folder or symbolic link name changes just rerun the gather, link script as shown in the last command.
 
+
+Differences FastenerFactory, BoltFactory
+---
+<img src="https://blenderartists.org/forum/attachment.php?attachmentid=468928&d=1485150924" alt=""/>
+
