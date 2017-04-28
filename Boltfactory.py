@@ -623,6 +623,8 @@ class MESH_OT_add_fastener(bpy.types.Operator):
         # Apply location of new object after having set the view's align matrix.
         scene.update()
 
+        # Ensure settings are loaded correctly:
+        obj.fastener_settings.bf_preset = 'M06.py'
         return bpy.ops.mesh.fastener_update()
 
 
