@@ -2116,6 +2116,11 @@ def create_geometry(context, verts, edges, faces, name=''):
     # Assign new mesh datablock.
     obj.data = mesh
 
+    bpy.ops.object.mode_set(mode='EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.mesh.normals_make_consistent()
+    bpy.ops.object.mode_set(mode='OBJECT')
+
     if mode_previous != None:
         # Switching back to e.g. EditMode.
         bpy.ops.object.mode_set(mode=mode_previous)
