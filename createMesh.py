@@ -2154,7 +2154,7 @@ def Create_New_Mesh(props, context):
 
     verts, faces = RemoveDoubles(verts, faces)
 
-    verts = Scale_Mesh_Verts(verts, props.bf_scale_factor)
+    verts = Scale_Mesh_Verts(verts, float(props.bf_scale_factor) / 1000.0)
 
     create_geometry(context, verts, [], faces, sObjName)
 

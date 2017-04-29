@@ -216,7 +216,7 @@ def update_lengths(self, context, force=False):
 update_lengths.level = False
 
 
-MAX_INPUT_NUMBER = 500
+MAX_INPUT_NUMBER = 1000
 class FastenerSettings(PropertyGroup):
     """Parameters of the fastener"""  # Tooltip
 
@@ -227,10 +227,10 @@ class FastenerSettings(PropertyGroup):
             #,update = update_settings_cb
     )
 
-    bf_scale_factor = FloatProperty(
-            default = .001
-            ,description = '<scale_factor> blender unit =: 1 mm'
-            ,min = 0, soft_min = 0, max = MAX_INPUT_NUMBER
+    bf_scale_factor = IntProperty(
+            default = 1
+            ,description = '<scale_factor> blender unit =: 1 m'
+            ,min = 1, soft_min = 1, max = MAX_INPUT_NUMBER
             ,name = 'Scale factor'
             ,update = update_settings_cb
             )
